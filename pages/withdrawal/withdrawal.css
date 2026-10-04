@@ -47,3 +47,14 @@
 .wd-hint.ok { color:var(--success); }
 .wd-hint.err { color:var(--danger); }
 .wd-net { text-align:right; font-size:0.82rem; font-weight:700; color:var(--success); margin:-4px 0 14px; }
+
+/* Success popup: 3-step progress */
+.wd-steps { display:flex; justify-content:space-between; gap:6px; margin:0 2px; }
+.wd-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:.68rem; font-weight:700; color:var(--text-muted); position:relative; }
+.wd-step i { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--bg-input); border:2px solid var(--border); font-size:.75rem; position:relative; z-index:1; }
+.wd-step:not(:last-child)::after { content:''; position:absolute; top:15px; left:calc(50% + 17px); width:calc(100% - 34px); height:2px; background:var(--border); }
+.wd-step.done i { background:var(--success); border-color:var(--success); color:#fff; }
+.wd-step.done { color:var(--success); }
+.wd-step.done::after { background:var(--success) !important; }
+.wd-step.now i { border-color:var(--warning); color:var(--warning); animation:fx-pulse-dot 1.6s ease-in-out infinite; }
+.wd-step.now { color:var(--warning); }
