@@ -1,10 +1,95 @@
-/* Notifications list + claim-cash card */
-.notif-card { background:var(--bg-card); padding:15px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border); position:relative; overflow:hidden; }
-.notif-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--primary); }
-.notif-title { font-weight:700; margin-bottom:5px; color:var(--text-main); font-size:0.95rem; }
-.notif-msg { font-size:0.85rem; color:var(--text-muted); line-height:1.5; }
-.notif-date { font-size:0.7rem; color:#cbd5e1; margin-top:8px; text-align:right; font-weight:600; }
-.claim-card { border:1px solid var(--primary); background:linear-gradient(135deg,#eef2ff,#fdf2f8); border-radius:14px; padding:14px; margin-bottom:12px; }
-.claim-amt { font-size:1.6rem; font-weight:900; color:var(--primary); margin:4px 0 10px; }
-.claim-btn { width:100%; padding:11px; border:none; border-radius:12px; font-weight:800; color:#fff; background:linear-gradient(135deg,#4f46e5,#f43f5e); cursor:pointer; }
-.claim-btn:disabled { opacity:0.6; cursor:not-allowed; }
+/* Notifications sheet: header, cards, claim card, skeleton, empty state, clear-confirm */
+.nf-sheet { padding-bottom:calc(24px + env(safe-area-inset-bottom,0px)); min-height:46vh; }
+
+/* ---------- header ---------- */
+.nf-head { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.nf-head-ico { flex:none; width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#fff; background:linear-gradient(135deg,var(--primary),#7c3aed); box-shadow:0 8px 18px rgba(79,70,229,.32); }
+.nf-head-txt { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.nf-head-txt h2 { margin:0; font-size:1.35rem; line-height:1.1; }
+.nf-count { align-self:flex-start; font-size:.7rem; font-weight:800; letter-spacing:.2px; color:var(--text-muted); transition:color .3s; }
+.nf-count.has-new { color:var(--primary); }
+.nf-head-actions { display:flex; align-items:center; gap:8px; }
+.nf-clear { display:inline-flex; align-items:center; gap:6px; border:0; cursor:pointer; font:inherit; font-size:.76rem; font-weight:800; color:var(--danger); background:rgba(239,68,68,.1); padding:8px 12px; border-radius:30px; transition:transform .18s var(--ease-out,ease), background .2s, opacity .2s; }
+.nf-clear:active { transform:scale(.93); }
+.nf-clear.is-disabled { opacity:.4; pointer-events:none; }
+.nf-clear.is-active { background:var(--danger); color:#fff; }
+.nf-close { width:36px; height:36px; border:0; border-radius:50%; background:var(--bg-input); color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .25s var(--ease-spring,ease), background .2s; }
+.nf-close:active { transform:rotate(90deg) scale(.88); }
+
+/* ---------- inline confirm (height animates 0 -> auto) ---------- */
+.nf-confirm { display:grid; grid-template-rows:0fr; transition:grid-template-rows .4s var(--ease-out,ease), margin .4s var(--ease-out,ease); margin-bottom:0; }
+.nf-confirm.open { grid-template-rows:1fr; margin-bottom:14px; }
+.nf-confirm-clip { overflow:hidden; min-height:0; }
+.nf-confirm-box { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:14px; border-radius:16px; border:1px solid rgba(239,68,68,.35); background:linear-gradient(135deg,rgba(239,68,68,.10),rgba(244,63,94,.06)); opacity:0; transform:translateY(-10px) scale(.97); transition:opacity .3s .05s, transform .45s var(--ease-spring,ease) .05s; }
+.nf-confirm.open .nf-confirm-box { opacity:1; transform:none; }
+.nf-confirm-ico { flex:none; width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; background:var(--danger); box-shadow:0 6px 14px rgba(239,68,68,.35); }
+.nf-confirm.open .nf-confirm-ico { animation:nf-wiggle .7s .25s ease; }
+.nf-confirm-txt { flex:1; min-width:150px; display:flex; flex-direction:column; gap:2px; }
+.nf-confirm-txt b { font-size:.92rem; color:var(--text-main); }
+.nf-confirm-txt span { font-size:.78rem; line-height:1.4; color:var(--text-muted); }
+.nf-confirm-btns { display:flex; gap:8px; width:100%; }
+.nf-btn { flex:1; border:0; cursor:pointer; font:inherit; font-weight:800; font-size:.82rem; padding:11px 12px; border-radius:12px; transition:transform .18s var(--ease-out,ease), opacity .2s; }
+.nf-btn:active { transform:scale(.95); }
+.nf-btn:disabled { opacity:.6; pointer-events:none; }
+.nf-btn-ghost { background:var(--bg-input); color:var(--text-main); }
+.nf-btn-danger { color:#fff; background:linear-gradient(135deg,#ef4444,#f43f5e); box-shadow:0 6px 14px rgba(239,68,68,.3); }
+@keyframes nf-wiggle { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-14deg)} 40%{transform:rotate(12deg)} 60%{transform:rotate(-8deg)} 80%{transform:rotate(5deg)} }
+
+/* ---------- cards ---------- */
+.nf-list { padding-bottom:6px; }
+.notif-card { display:flex; gap:12px; align-items:flex-start; background:var(--bg-card); padding:14px; border-radius:16px; margin-bottom:10px; border:1px solid var(--border); position:relative; overflow:hidden; box-shadow:var(--shadow-card); --nf:var(--primary); --nf-soft:rgba(79,70,229,.12); }
+.notif-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--nf); }
+.nf-green  { --nf:#10b981; --nf-soft:rgba(16,185,129,.14); }
+.nf-amber  { --nf:#f59e0b; --nf-soft:rgba(245,158,11,.15); }
+.nf-blue   { --nf:#3b82f6; --nf-soft:rgba(59,130,246,.14); }
+.nf-violet { --nf:#7c3aed; --nf-soft:rgba(124,58,237,.14); }
+.nf-red    { --nf:#ef4444; --nf-soft:rgba(239,68,68,.13); }
+.nf-ico { flex:none; width:38px; height:38px; margin-left:4px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:var(--nf); background:var(--nf-soft); }
+.nf-body { flex:1; min-width:0; }
+.nf-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.notif-title { font-weight:800; margin-bottom:3px; color:var(--text-main); font-size:.92rem; line-height:1.3; word-break:break-word; }
+.notif-msg { font-size:.82rem; color:var(--text-muted); line-height:1.5; word-break:break-word; }
+.notif-date { display:flex; align-items:center; gap:5px; font-size:.7rem; color:var(--text-muted); opacity:.8; margin-top:8px; text-align:left; font-weight:600; }
+.nf-new-badge { flex:none; font-size:.6rem; font-weight:900; letter-spacing:.5px; color:#fff; background:linear-gradient(135deg,var(--primary),#f43f5e); padding:3px 8px; border-radius:20px; animation:nf-badge 2s ease-in-out infinite; }
+.notif-card.nf-unseen { border-color:var(--nf); box-shadow:0 6px 18px -6px var(--nf-soft), var(--shadow-card); }
+@keyframes nf-badge { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+/* entrance + exit */
+#notif-list-container .notif-card, #notif-list-container .claim-card { animation:nf-in .5s var(--ease-out,ease) backwards; }
+@keyframes nf-in { from{opacity:0; transform:translateX(26px) scale(.97)} to{opacity:1; transform:none} }
+#notif-list-container .nf-out { animation:nf-out .45s cubic-bezier(.55,0,.8,.3) forwards !important; animation-delay:calc(var(--i,0) * 55ms) !important; pointer-events:none; }
+@keyframes nf-out { 0%{opacity:1; transform:none} 100%{opacity:0; transform:translateX(-70px) rotate(-3deg) scale(.9)} }
+
+/* ---------- claim card ---------- */
+.claim-card { position:relative; overflow:hidden; border:1px solid var(--primary); background:linear-gradient(135deg,#eef2ff,#fdf2f8); border-radius:18px; padding:16px; margin-bottom:12px; box-shadow:0 10px 24px -10px rgba(79,70,229,.35); }
+.claim-card::after { content:''; position:absolute; top:0; left:0; width:35%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent); transform:translateX(-130%) skewX(-20deg); animation:fx-shine 4s ease-in-out infinite; pointer-events:none; }
+.claim-top { display:flex; align-items:center; gap:10px; }
+.claim-gift { flex:none; width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; background:linear-gradient(135deg,var(--primary),#f43f5e); animation:fx-float 2.6s ease-in-out infinite; }
+.claim-amt { font-size:1.7rem; font-weight:900; color:var(--primary); margin:6px 0 10px; letter-spacing:-.5px; }
+.claim-btn { width:100%; padding:12px; border:none; border-radius:12px; font-weight:800; color:#fff; background:linear-gradient(135deg,#4f46e5,#f43f5e); cursor:pointer; box-shadow:0 8px 18px -6px rgba(244,63,94,.5); }
+.claim-btn:disabled { opacity:.6; cursor:not-allowed; box-shadow:none; }
+
+/* ---------- skeleton ---------- */
+.nf-skel { display:flex; gap:12px; padding:14px; border-radius:16px; margin-bottom:10px; background:var(--bg-card); border:1px solid var(--border); }
+.nf-skel i, .nf-skel b, .nf-skel s { display:block; border-radius:8px; background:linear-gradient(100deg,var(--bg-input) 30%,var(--border) 50%,var(--bg-input) 70%); background-size:200% 100%; animation:hb-shimmer 1.3s linear infinite; text-decoration:none; }
+.nf-skel i { width:38px; height:38px; border-radius:12px; flex:none; }
+.nf-skel div { flex:1; display:flex; flex-direction:column; gap:8px; }
+.nf-skel b { height:12px; width:55%; } .nf-skel s { height:10px; width:90%; }
+
+/* ---------- empty state ---------- */
+.nf-empty { text-align:center; padding:34px 20px 22px; display:flex; flex-direction:column; align-items:center; gap:6px; animation:fx-pop .6s var(--ease-spring,ease) backwards; }
+.nf-empty b { font-size:1.05rem; font-weight:800; color:var(--text-main); }
+.nf-empty span { font-size:.82rem; color:var(--text-muted); max-width:240px; line-height:1.5; }
+.nf-empty-ico { position:relative; width:84px; height:84px; margin-bottom:12px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; color:var(--primary); background:var(--primary-light); }
+.nf-empty-ico i { animation:bell-shake 2.8s ease-in-out .6s infinite; transform-origin:top center; }
+.nf-empty-ico::before, .nf-empty-ico::after { content:''; position:absolute; inset:0; border-radius:50%; border:2px solid var(--primary); opacity:0; animation:nf-ring 2.6s ease-out infinite; }
+.nf-empty-ico::after { animation-delay:1.3s; }
+@keyframes nf-ring { 0%{transform:scale(1); opacity:.5} 100%{transform:scale(1.7); opacity:0} }
+
+/* ---------- dark ---------- */
+body.dark .claim-card { background:linear-gradient(135deg,#1e1b4b,#3b0764); }
+body.dark .claim-card::after { background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); }
+body.dark .nf-confirm-box { background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(244,63,94,.08)); }
+body.dark .nf-empty-ico { background:rgba(79,70,229,.2); }
+
+@media (prefers-reduced-motion:reduce){ #notif-list-container .nf-out { animation-duration:.01ms !important; animation-delay:0s !important; } }
