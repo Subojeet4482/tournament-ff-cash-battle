@@ -1,8 +1,11 @@
-/* Design tokens (colors, radius, nav height) */
+/* Design tokens (colors, radius, nav height) — LIGHT theme */
 :root {
-    --bg-body:#f8fafc; --bg-card:#ffffff; --bg-input:#f1f5f9;
+    --bg-body:#f4f6fb; --bg-card:#ffffff; --bg-input:#eef1f8;
     --primary:#4f46e5; --primary-dark:#3730a3; --primary-light:#e0e7ff;
     --accent:#f43f5e; --text-main:#0f172a; --text-muted:#64748b;
     --success:#10b981; --warning:#f59e0b; --danger:#ef4444;
-    --nav-height:65px; --radius:16px; --border:#e2e8f0;
+    --nav-height:65px; --radius:16px; --border:#e3e8f2;
+    --shadow-card:0 2px 10px rgba(15,23,42,.05);
+    --theme-wave-bg:#f4f6fb;
+    color-scheme: light;
 }
