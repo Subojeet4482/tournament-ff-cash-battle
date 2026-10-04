@@ -16,17 +16,12 @@ Object.assign(window.app, {
         const tdEl=document.getElementById('wallet-total-deposit'); if(tdEl) tdEl.innerText=parseFloat(window.db.user_data.totalDeposited||0).toFixed(0);
         const twEl=document.getElementById('wallet-total-withdraw'); if(twEl) twEl.innerText=parseFloat(window.db.user_data.totalWithdrawn||0).toFixed(0);
         const c=document.getElementById('trx-list'); c.innerHTML="";
-        if(window.db.trx.length===0){ c.innerHTML="<div style='text-align:center; padding:10px; color:#aaa'>No transactions</div>"; return; }
+        if(window.db.trx.length===0){ c.innerHTML="<div style='text-align:center; padding:10px; color:#aaa'>No transactions yet. Add money or play a match to get started.</div>"; return; }
        // Only show deposits & withdrawals from last 7 days (Point 2)
         const cutoff = Date.now() - 7*24*60*60*1000;
-        const filtered = window.db.trx.filter(t => (t.type==='deposit'||t.type==='withdraw') && (!t._ms || t._ms>=cutoff));
-        if(filtered.length===0){ c.innerHTML="<div style='text-align:center; padding:10px; color:#aaa'>No deposits / withdrawals in last 7 days</div>"; return; }
-        filtered.forEach(t=>{
-            let icon="fa-gamepad", box="icon-game", col="var(--text-main)";
-            if(t.type==='deposit'){ icon="fa-arrow-down"; box="icon-deposit"; col="var(--success)"; }
-            if(t.type==='withdraw'){ icon="fa-arrow-up"; box="icon-withdraw"; col="var(--danger)"; }
-            c.innerHTML+=`<div class="trx-item"><div style="display:flex; align-items:center;"><div class="trx-icon-box ${box}"><i class="fa-solid ${icon}"></i></div><div><h4>${t.title}</h4><p class="text-muted" style="font-size:0.75rem">${t.date}</p></div></div><div style="text-align:right"><div style="font-weight:700; color:${col}">₹${t.amount}</div><span class="trx-status status-${t.status}">${t.status}</span></div></div>`;
-        });
+        const filtered = window.db.trx.filter(t => (t.type==='deposit'||t.type==='withdraw'||t.type==='refund') && (!t._ms || t._ms>=cutoff));
+        if(filtered.length===0){ c.innerHTML="<div style='text-align:center; padding:10px; color:#aaa'>No deposits, withdrawals or refunds in the last 7 days. Your recent activity will appear here.</div>"; return; }
+        filtered.forEach(t=>{ c.innerHTML+=window.app.trxRow(t); });
     },
     fetchTransactions: async () => {
         try {
@@ -41,7 +36,7 @@ Object.assign(window.app, {
                 if((dt.type==='deposit'||dt.type==='withdraw') && ms && ms<cutoff) stale.push(d.id);
                 window.db.trx.push(dt);
             });
-            window.db.trx.reverse();
+            window.db.trx.sort((a,b)=>(b._ms||0)-(a._ms||0));
             // Auto-remove deposit/withdraw records older than 7 days (Point 3)
             for(const sid of stale){ try{ await deleteDoc(doc(dbService,"users",window.db.user_uid,"transactions",sid)); }catch(e){} }
             // Resume any pending/processing UPI auto-deposit verifications (background only)
