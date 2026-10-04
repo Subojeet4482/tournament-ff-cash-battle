@@ -1,15 +1,91 @@
-<!-- FORGOT PASSWORD MODAL -->
-<div id="modal-forgot" class="modal-wrap" style="z-index:10001;">
-    <div class="modal-overlay" onclick="ui.closeModal()"></div>
-    <div class="modal-sheet fp-card">
-        <div class="fp-icon"><i class="fa-solid fa-key"></i></div>
-        <h2 style="margin:0 0 6px; font-size:1.3rem; font-weight:800;">Reset Password</h2>
-        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:18px; line-height:1.5;">Enter your registered email. We'll send you a secure reset link.</p>
-        <div class="input-group" style="margin-bottom:14px;">
-            <i class="fa-solid fa-envelope"></i>
-            <input type="email" id="forgot-email" class="input-box" placeholder="Your email address" style="padding-left:45px;">
+<!-- FORGOT / RESET PASSWORD (full-screen flow: email -> check email -> set new password -> done) -->
+<div id="fp-wrapper" data-step="email">
+    <div class="auth-orb orb1"></div><div class="auth-orb orb2"></div><div class="auth-orb orb3"></div>
+    <div class="fp-box" id="fp-box">
+        <button type="button" class="fp-x" onclick="auth.fpClose()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <div class="fp-steps" id="fp-steps">
+
+            <!-- 1. ENTER EMAIL -->
+            <section class="fp-step" data-s="email">
+                <div class="fp-ico"><span class="fp-ring"></span><i class="fa-solid fa-key"></i></div>
+                <h2>Forgot password?</h2>
+                <p class="fp-sub">No worries! Enter your registered email and we'll send you a secure link to set a new password.</p>
+                <div class="input-group fp-field"><i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="forgot-email" class="input-box" placeholder="Your email address" autocomplete="email" inputmode="email" style="padding-left:45px;" onkeydown="if(event.key==='Enter'){event.preventDefault();auth.sendForgot();}" oninput="this.classList.remove('invalid')">
+                </div>
+                <button class="btn-main fp-btn" id="forgot-send-btn" onclick="auth.sendForgot()"><i class="fa-solid fa-paper-plane"></i> Send Reset Link</button>
+                <div class="fp-tip"><i class="fa-solid fa-inbox"></i><span>The email may land in your <b>Spam / Junk</b> folder — please check there too.</span></div>
+                <button type="button" class="fp-link" onclick="auth.fpClose()"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+            </section>
+
+            <!-- 2. WAITING PAGE: check your email -->
+            <section class="fp-step hidden" data-s="sent">
+                <div class="fp-ico sent"><span class="fp-ring"></span><span class="fp-ring r2"></span><i class="fa-solid fa-envelope-open-text"></i><b class="fp-plane"><i class="fa-solid fa-paper-plane"></i></b></div>
+                <h2>Check your email</h2>
+                <p class="fp-sub">We've sent a password reset link to<br><b id="fp-sent-email" class="fp-mail"></b></p>
+                <ol class="fp-how">
+                    <li><span>1</span> Open your email app</li>
+                    <li><span>2</span> Open our email &amp; tap <b>Reset password</b></li>
+                    <li><span>3</span> Set your new password there</li>
+                </ol>
+                <div class="fp-spam"><div class="fp-spam-ico"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div><b>Can't find the email?</b><span>Please check your <b>Spam / Junk</b> (and Promotions) folder. If it's there, tap <b>"Not spam"</b> so you receive our emails in your inbox.</span></div></div>
+                <a id="fp-gmail" class="fp-gmail hidden" href="https://mail.google.com/" target="_blank" rel="noopener"><i class="fa-brands fa-google"></i> Open Gmail</a>
+                <div class="fp-resend">
+                    <div class="fp-bar"><span id="fp-bar"></span></div>
+                    <button type="button" class="fp-link strong" id="fp-resend-btn" onclick="auth.fpResend()" disabled>Resend link in 3:00</button>
+                </div>
+                <button type="button" class="fp-link" onclick="auth.fpChangeEmail()"><i class="fa-solid fa-pen"></i> Use a different email</button>
+            </section>
+
+            <!-- 3. VERIFYING THE LINK -->
+            <section class="fp-step hidden" data-s="verifying">
+                <div class="fp-ico"><span class="fp-ring"></span><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+                <h2>Verifying your link…</h2>
+                <p class="fp-sub">Please wait a moment.</p>
+            </section>
+
+            <!-- 4. SET NEW PASSWORD -->
+            <section class="fp-step hidden" data-s="reset">
+                <div class="fp-ico shield"><span class="fp-ring"></span><i class="fa-solid fa-shield-halved"></i></div>
+                <h2>Set new password</h2>
+                <p class="fp-sub">Create a new password for<br><b id="fp-reset-email" class="fp-mail"></b></p>
+                <div class="input-group has-eye fp-field"><i class="fa-solid fa-lock"></i>
+                    <input type="password" id="fp-new" class="input-box" placeholder="New password" autocomplete="new-password" style="padding-left:45px;" oninput="this.classList.remove('invalid'); auth.fpCheckPw()" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('fp-new2').focus();}">
+                    <button type="button" class="pw-eye" tabindex="-1" onclick="auth.togglePw('fp-new',this)"><i class="fa-regular fa-eye"></i></button>
+                </div>
+                <div class="pw-meter"><span id="fp-bar-str"></span></div>
+                <div class="pw-lbl" id="fp-lbl-str"></div>
+                <div class="input-group has-eye fp-field"><i class="fa-solid fa-lock"></i>
+                    <input type="password" id="fp-new2" class="input-box" placeholder="Confirm new password" autocomplete="new-password" style="padding-left:45px;" oninput="this.classList.remove('invalid'); auth.fpCheckPw()" onkeydown="if(event.key==='Enter'){event.preventDefault();auth.fpSavePw();}">
+                    <button type="button" class="pw-eye" tabindex="-1" onclick="auth.togglePw('fp-new2',this)"><i class="fa-regular fa-eye"></i></button>
+                </div>
+                <ul class="fp-rules" id="fp-rules">
+                    <li data-r="len"><i class="fa-solid fa-circle"></i> At least 6 characters</li>
+                    <li data-r="mix"><i class="fa-solid fa-circle"></i> Upper &amp; lower case letters <em>(recommended)</em></li>
+                    <li data-r="num"><i class="fa-solid fa-circle"></i> A number <em>(recommended)</em></li>
+                    <li data-r="match"><i class="fa-solid fa-circle"></i> Both passwords match</li>
+                </ul>
+                <button class="btn-main fp-btn" id="fp-save-btn" onclick="auth.fpSavePw()"><i class="fa-solid fa-check"></i> Update Password</button>
+            </section>
+
+            <!-- 5. SUCCESS -->
+            <section class="fp-step hidden" data-s="done">
+                <div class="fp-check"><svg viewBox="0 0 60 60" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle class="ad-circle" cx="30" cy="30" r="26"/><path class="ad-check" d="M18 31l9 9 16-18"/></svg></div>
+                <h2>Password updated!</h2>
+                <p class="fp-sub">Your password has been changed successfully.<br>You can now log in with your new password.</p>
+                <button class="btn-main fp-btn" onclick="auth.fpToLogin()"><i class="fa-solid fa-right-to-bracket"></i> Go to Login</button>
+            </section>
+
+            <!-- 6. INVALID / EXPIRED LINK -->
+            <section class="fp-step hidden" data-s="invalid">
+                <div class="fp-ico bad"><span class="fp-ring"></span><i class="fa-solid fa-link-slash"></i></div>
+                <h2>Link expired</h2>
+                <p class="fp-sub" id="fp-invalid-msg">This reset link has expired or was already used. Please request a new one.</p>
+                <button class="btn-main fp-btn" onclick="auth.fpChangeEmail()"><i class="fa-solid fa-rotate-right"></i> Get a New Link</button>
+                <button type="button" class="fp-link" onclick="auth.fpClose()"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+            </section>
+
         </div>
-        <button class="btn-main" id="forgot-send-btn" onclick="auth.sendForgot()" style="padding:12px; border-radius:50px;">Send Reset Link</button>
-        <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted);">You can request again every 3 minutes</div>
     </div>
 </div>
