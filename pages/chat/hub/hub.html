@@ -1,0 +1,41 @@
+<!-- HUB -->
+<div id="chat-hub" class="chat-hub-view">
+    <div class="chat-hero" onclick="chat.openSub('profile')">
+        <div class="ch-av" id="ch-av">?</div>
+        <div class="ch-txt">
+            <div class="ch-hi" id="ch-hi">Hey there 👋</div>
+            <div class="ch-sub">Talk to players, make friends, join groups</div>
+        </div>
+        <i class="fa-solid fa-chevron-right ch-go"></i>
+    </div>
+    <div class="chat-hub-grid">
+        <div class="chat-hub-btn" style="--c1:#6366f1;--c2:#4338ca" onclick="chat.openSub('profile')">
+            <div class="chat-hub-ic"><i class="fa-solid fa-user"></i></div>
+            <div class="chat-hub-lbl">Profile</div>
+            <div class="chat-hub-sub">Your identity</div>
+        </div>
+        <div class="chat-hub-btn" style="--c1:#34d399;--c2:#059669" onclick="chat.openSub('search')">
+            <div class="chat-hub-ic"><i class="fa-solid fa-magnifying-glass"></i><span class="hub-badge hidden" id="hub-req-badge">0</span></div>
+            <div class="chat-hub-lbl">Find Friend</div>
+            <div class="chat-hub-sub">Search users</div>
+        </div>
+        <div class="chat-hub-btn" style="--c1:#fb7185;--c2:#e11d48" onclick="chat.openSub('world')">
+            <div class="chat-hub-ic"><i class="fa-solid fa-globe"></i><span class="hub-live"></span></div>
+            <div class="chat-hub-lbl">World Chat</div>
+            <div class="chat-hub-sub">Public room</div>
+        </div>
+        <div class="chat-hub-btn" style="--c1:#38bdf8;--c2:#0284c7" onclick="chat.openSub('friends')">
+            <div class="chat-hub-ic"><i class="fa-solid fa-comments"></i></div>
+            <div class="chat-hub-lbl">Friends &amp; Groups</div>
+            <div class="chat-hub-sub">Private chats</div>
+        </div>
+        <div class="chat-hub-btn wide" style="--c1:#fbbf24;--c2:#d97706" onclick="chat.openSub('discover')">
+            <div class="chat-hub-ic"><i class="fa-solid fa-users-viewfinder"></i></div>
+            <div class="chat-hub-txt">
+                <div class="chat-hub-lbl">Discover Groups &amp; People</div>
+                <div class="chat-hub-sub">Trending &amp; suggestions</div>
+            </div>
+            <i class="fa-solid fa-chevron-right ch-go"></i>
+        </div>
+    </div>
+</div>
