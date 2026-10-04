@@ -1,0 +1,20 @@
+<!-- 2. SEARCH FRIEND -->
+<div id="chat-sub-search" class="chat-sub-view hidden">
+    <div class="chat-sub-header">
+        <div class="chat-back" onclick="chat.backToHub()"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="chat-sub-title">Find Friend</div>
+    </div>
+    <div style="padding:12px 16px;">
+        <input class="input-box" id="fs-input" placeholder="Search username or name..." style="width:100%;padding:12px 16px;border-radius:14px;border:1px solid var(--border);" oninput="chat.searchUsers(this.value)">
+    </div>
+    <div class="chat-tabs" style="top:56px;">
+        <div class="chat-tab active" data-fstab="results" onclick="chat.setFsTab('results',this)">Results</div>
+        <div class="chat-tab" data-fstab="requests" onclick="chat.setFsTab('requests',this)">Requests</div>
+        <div class="chat-tab" data-fstab="friends" onclick="chat.setFsTab('friends',this)">Friends</div>
+    </div>
+    <div class="chat-sub-body">
+        <div id="fs-results"></div>
+        <div id="fs-requests" class="hidden"></div>
+        <div id="fs-friends" class="hidden"></div>
+    </div>
+</div>
