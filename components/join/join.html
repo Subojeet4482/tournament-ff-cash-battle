@@ -1,0 +1,63 @@
+<!-- JOIN -->
+<div id="modal-join" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 style="margin:0">Confirm Join</h2>
+            <div onclick="ui.closeModal()" style="font-size:1.5rem; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <div class="join-steps" id="join-steps" data-step="1">
+            <div class="js-step"><span class="js-dot">1</span><span class="js-lbl">Pay</span></div>
+            <div class="js-line"><span></span></div>
+            <div class="js-step"><span class="js-dot">2</span><span class="js-lbl">Slot</span></div>
+        </div>
+        <h4 id="join-title" style="margin-bottom:10px;">Match Title</h4>
+        <div class="modal-summary">
+            <div class="sum-item"><span class="sum-val" id="sum-type">Solo</span><span class="sum-lbl">Type</span></div>
+            <div class="sum-item"><span class="sum-val" id="sum-map">Map</span><span class="sum-lbl">Map</span></div>
+            <div class="sum-item"><span class="sum-val text-success" id="sum-prize">0</span><span class="sum-lbl">Prize</span></div>
+        </div>
+
+        <!-- Step 1: Registration -->
+        <div id="join-step1">
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-muted);">Game Username *</label>
+                <input type="text" id="game-name" class="input-box" placeholder="Exact In-Game Name">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-muted);">Free Fire UID *</label>
+                <input type="number" id="game-uid" class="input-box" placeholder="Enter your FF UID">
+                <div id="uid-error" style="font-size:0.75rem; color:var(--danger); margin-top:-8px; margin-bottom:8px; display:none;">UID invalid hai</div>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="join-terms">
+                <label for="join-terms">I agree to match rules & fair play policy.</label>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <div>
+                    <div class="text-muted" style="font-size:0.8rem">Entry Fee</div>
+                    <div class="text-primary bold" style="font-size:1.2rem;">₹ <span id="join-fee">0</span></div>
+                </div>
+                <div class="balance-status" id="join-bal-status">Checking...</div>
+            </div>
+            <button class="btn-main" id="btn-pay-join" onclick="app.confirmJoin()" style="margin-top:15px;">Pay & Join</button>
+        </div>
+
+        <!-- Step 2: Slot Selection -->
+        <div id="join-step2" class="hidden">
+            <div style="font-weight:700; margin-bottom:5px; color:var(--primary);">🎯 Slot Select Karo</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;" id="slot-hint">Free Fire custom room jaisa — apna slot box choose karo</div>
+            <div id="slot-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; max-height:340px; overflow-y:auto; padding:4px;"></div>
+            <button class="btn-main" onclick="app.confirmSlot()" style="margin-top:15px;" id="btn-confirm-slot" disabled>Confirm Slot</button>
+        </div>
+
+        <!-- success overlay (payment done / slot confirmed) -->
+        <div class="join-done" id="join-done">
+            <div class="jd-confetti" id="jd-confetti"></div>
+            <svg class="jd-svg" viewBox="0 0 60 60" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle class="jd-circle" cx="30" cy="30" r="26"/><path class="jd-check" d="M18 31l9 9 16-18"/></svg>
+            <h3 id="jd-title">Done</h3>
+            <p id="jd-sub"></p>
+        </div>
+    </div>
+</div>
