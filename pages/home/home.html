@@ -1,0 +1,20 @@
+<!-- HOME -->
+<div id="page-home" class="page-section">
+    <div id="home-banner-container" class="hb">
+        <div id="home-banner-track" class="hb-track">
+            <div class="hb-slide hb-skel"></div>
+        </div>
+        <button type="button" class="hb-arrow hb-prev hidden" aria-label="Previous" onclick="app.bannerGo(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button type="button" class="hb-arrow hb-next hidden" aria-label="Next" onclick="app.bannerGo(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="hb-count hidden" id="home-banner-count">1/1</div>
+        <div id="home-banner-dots" class="hb-dots"></div>
+    </div>
+    <div class="filter-scroll" id="category-filters">
+        <div class="filter-chip skeleton-anim" style="width:60px; height:35px; border-radius:50px;"></div>
+        <div class="filter-chip skeleton-anim" style="width:80px; height:35px; border-radius:50px;"></div>
+        <div class="filter-chip skeleton-anim" style="width:70px; height:35px; border-radius:50px;"></div>
+    </div>
+    <div id="matches-container" style="padding-top:15px;">
+        <div class="sk-card"><div class="sk-banner skeleton-anim"></div><div class="sk-body"><div class="sk-row"><div class="sk-box skeleton-anim"></div><div class="sk-box skeleton-anim"></div><div class="sk-box skeleton-anim"></div></div><div class="sk-line skeleton-anim" style="width:60%"></div><div class="sk-btn skeleton-anim"></div></div></div>
+    </div>
+</div>
