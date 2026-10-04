@@ -1,0 +1,45 @@
+/* Settings: toggle switches + gear animation */
+.dm-toggle-wrap { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.toggle-track { width:40px; height:22px; background:#e2e8f0; border-radius:11px; position:relative; transition:0.3s; cursor:pointer; }
+.toggle-dot { position:absolute; width:18px; height:18px; background:white; border-radius:50%; top:2px; left:2px; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+.toggle-track.active { background:var(--primary); }
+.toggle-track.active .toggle-dot { left:20px; }
+@keyframes gear-spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.gear-spin { animation: gear-spin 0.6s ease-in-out; }
+
+/* Edit profile sheet */
+.ep-sheet { padding:24px 22px 28px; }
+.ep-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.ep-head h2 { margin:0; font-size:1.25rem; font-weight:800; }
+.ep-x { width:34px; height:34px; border:0; border-radius:50%; background:var(--bg-input); color:var(--text-muted); font-size:1rem; cursor:pointer; transition:transform .25s var(--ease-spring), background .2s; }
+.ep-x:active { transform:scale(.88) rotate(90deg); }
+.ep-top { display:flex; flex-direction:column; align-items:center; margin-bottom:16px; }
+.ep-avatar { position:relative; width:96px; height:96px; cursor:pointer; transition:transform .25s var(--ease-spring); }
+.ep-avatar:active { transform:scale(.94); }
+.ep-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid var(--bg-card); box-shadow:0 0 0 3px var(--primary), 0 10px 22px rgba(79,70,229,.3); position:relative; z-index:1; background:var(--bg-input); }
+.ep-ring { position:absolute; inset:-8px; border-radius:50%; border:2px dashed var(--primary); opacity:.45; animation:ep-spin 14s linear infinite; }
+@keyframes ep-spin { to{transform:rotate(360deg)} }
+.ep-cam { position:absolute; right:-2px; bottom:0; z-index:2; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; font-size:.8rem; display:flex; align-items:center; justify-content:center; border:3px solid var(--bg-card); }
+.ep-avatar.swap img { animation:fx-pop .45s var(--ease-spring); }
+.ep-hint { margin-top:10px; font-size:.78rem; font-weight:600; color:var(--primary); }
+.ep-hint span { color:var(--text-muted); font-weight:500; }
+.ep-pid { margin-top:8px; border:0; background:var(--bg-input); color:var(--text-muted); font-size:.72rem; font-weight:600; padding:5px 12px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.ep-pid b { color:var(--text-main); font-family:monospace; letter-spacing:.5px; }
+.ep-pid:active { transform:scale(.95); }
+.ep-card { background:var(--bg-body); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:14px; }
+.ep-title { margin:0 0 12px; font-size:.9rem; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:8px; }
+.ep-lbl { display:block; margin:0 0 6px 2px; font-size:.75rem; font-weight:600; color:var(--text-muted); }
+.ep-field { position:relative; margin-bottom:12px; }
+.ep-field:last-child { margin-bottom:0; }
+.ep-field > i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:.95rem; transition:color .25s, transform .3s var(--ease-spring); pointer-events:none; }
+.ep-field:focus-within > i { color:var(--primary); transform:translateY(-50%) scale(1.2); }
+.ep-field .input-box { padding-left:40px; margin:0; background:var(--bg-card); border:2px solid var(--border); }
+.ep-field .input-box:focus { border-color:var(--primary); }
+.ep-field .input-box:disabled { opacity:.65; cursor:not-allowed; background:var(--bg-input); }
+.ep-count { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:.68rem; color:var(--text-muted); font-weight:600; }
+.ep-field:has(.ep-count) .input-box { padding-right:52px; }
+.ep-sub { margin:-4px 2px 0; font-size:.72rem; color:var(--text-muted); text-align:right; }
+.ep-sub b { color:var(--text-main); }
+#ep-save { margin-top:6px; display:flex; align-items:center; justify-content:center; gap:8px; }
+#ep-save.saving i { animation:ep-spin 1s linear infinite; }
+body.dark .ep-card { background:rgba(15,23,42,.45); }
