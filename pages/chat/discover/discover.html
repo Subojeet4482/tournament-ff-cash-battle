@@ -1,0 +1,17 @@
+<!-- 5. DISCOVER -->
+<div id="chat-sub-discover" class="chat-sub-view hidden">
+    <div class="chat-sub-header">
+        <div class="chat-back" onclick="chat.backToHub()"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="chat-sub-title">Discover</div>
+    </div>
+    <div class="chat-tabs" style="top:56px;">
+        <div class="chat-tab active" data-dctab="trending" onclick="chat.setDcTab('trending',this)">Trending</div>
+        <div class="chat-tab" data-dctab="public" onclick="chat.setDcTab('public',this)">Groups</div>
+        <div class="chat-tab" data-dctab="people" onclick="chat.setDcTab('people',this)">People</div>
+    </div>
+    <div class="chat-sub-body">
+        <div id="dc-trending"></div>
+        <div id="dc-public" class="hidden"></div>
+        <div id="dc-people" class="hidden"></div>
+    </div>
+</div>
