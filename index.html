@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FF Cash Battle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- App styles (order matters) -->
+    <link rel="stylesheet" href="css/base/variables.css">
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/layout.css">
+    <link rel="stylesheet" href="css/base/components.css">
+    <link rel="stylesheet" href="components/toast/toast.css">
+    <link rel="stylesheet" href="components/header/header.css">
+    <link rel="stylesheet" href="components/nav-bar/nav-bar.css">
+    <link rel="stylesheet" href="components/drawer/drawer.css">
+    <link rel="stylesheet" href="components/notice/notice.css">
+    <link rel="stylesheet" href="components/notifications/notifications.css">
+    <link rel="stylesheet" href="pages/loading/loading.css">
+    <link rel="stylesheet" href="pages/login/login.css">
+    <link rel="stylesheet" href="pages/register/register.css">
+    <link rel="stylesheet" href="pages/home/home.css">
+    <link rel="stylesheet" href="pages/match/match.css">
+    <link rel="stylesheet" href="pages/rank/rank.css">
+    <link rel="stylesheet" href="pages/wallet/wallet.css">
+    <link rel="stylesheet" href="pages/history/history.css">
+    <link rel="stylesheet" href="components/deposit/deposit.css">
+    <link rel="stylesheet" href="components/join/join.css">
+    <link rel="stylesheet" href="pages/withdrawal/withdrawal.css">
+    <link rel="stylesheet" href="pages/setting/setting.css">
+    <link rel="stylesheet" href="pages/chat/chat.css">
+    <link rel="stylesheet" href="pages/chat/hub/hub.css">
+    <link rel="stylesheet" href="pages/chat/messages.css">
+    <link rel="stylesheet" href="pages/chat/profile/profile.css">
+    <link rel="stylesheet" href="pages/chat/friends/friends.css">
+    <link rel="stylesheet" href="pages/chat/thread/thread.css">
+    <link rel="stylesheet" href="components/session/session.css">
+    <link rel="stylesheet" href="css/base/animations.css">
+    <link rel="stylesheet" href="pages/chat/chat-ui.css">
+    <link rel="stylesheet" href="css/themes/dark.css">
+</head>
+<body>
+
+<div data-include="components/toast/toast.html"></div>
+
+<div data-include="pages/loading/loading.html"></div>
+
+<div data-include="components/audio/audio.html"></div>
+
+<div data-include="pages/withdrawal/success.html"></div>
+
+<div data-include="components/notice/notice.html"></div>
+
+<div data-include="components/notifications/notifications.html"></div>
+
+<div data-include="components/ban-overlay/ban-overlay.html"></div>
+
+<div data-include="pages/login/forgot.html"></div>
+
+<!-- SESSION: logout confirm, logout overlay, welcome chip -->
+<div data-include="components/session/session.html"></div>
+
+<!-- AUTH -->
+<div id="auth-modal-wrapper">
+    <div class="auth-orb orb1"></div><div class="auth-orb orb2"></div><div class="auth-orb orb3"></div>
+    <div class="auth-card" id="auth-card">
+        <div class="auth-close" onclick="window.auth.hideAuth()"><i class="fa-solid fa-xmark"></i></div>
+        <div class="app-logo-icon"><span class="logo-ring"></span><i class="fa-solid fa-gamepad"></i></div>
+        <h1 class="app-title">FF Cash Battle</h1>
+        <p class="auth-sub" id="auth-sub">Login to play matches &amp; win</p>
+
+        <div class="auth-tabs" id="auth-tabs" data-active="login">
+            <span class="auth-tab-pill"></span>
+            <button type="button" class="auth-tab active" data-tab="login" onclick="auth.switch('login')">Login</button>
+            <button type="button" class="auth-tab" data-tab="register" onclick="auth.switch('register')">Sign Up</button>
+        </div>
+
+        <div class="auth-forms" id="auth-forms">
+<div data-include="pages/login/login.html"></div>
+<div data-include="pages/register/register.html"></div>
+        </div>
+
+        <!-- success overlay (login / sign up) -->
+        <div class="auth-done" id="auth-done">
+            <svg viewBox="0 0 60 60" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle class="ad-circle" cx="30" cy="30" r="26"/><path class="ad-check" d="M18 31l9 9 16-18"/></svg>
+            <h3 id="auth-done-title">Welcome back!</h3>
+            <p id="auth-done-sub">Logging you in…</p>
+        </div>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app-interface">
+
+<div data-include="components/drawer/drawer.html"></div>
+
+<div data-include="components/header/header.html"></div>
+
+<div id="main-view">
+
+<div data-include="pages/home/home.html"></div>
+
+<div data-include="pages/match/match.html"></div>
+
+<div data-include="pages/rank/rank.html"></div>
+
+<div data-include="pages/wallet/wallet.html"></div>
+</div>
+
+<div data-include="pages/chat/chat.html"></div>
+
+<div data-include="components/nav-bar/nav-bar.html"></div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<div data-include="pages/setting/edit-profile.html"></div>
+
+<div data-include="pages/setting/setting.html"></div>
+
+<div data-include="pages/setting/rules.html"></div>
+
+<div data-include="components/join/join.html"></div>
+
+<div data-include="components/deposit/deposit.html"></div>
+
+<div data-include="pages/withdrawal/withdrawal.html"></div>
+
+<div data-include="components/transfer/transfer.html"></div>
+
+<div data-include="pages/history/history.html"></div>
+
+<div data-include="pages/setting/sound.html"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
