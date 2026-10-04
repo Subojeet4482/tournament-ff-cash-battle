@@ -1,16 +1,38 @@
 <!-- NOTIFICATIONS -->
 <div id="modal-notifications" class="modal-wrap">
     <div class="modal-overlay" onclick="ui.closeModal()"></div>
-    <div class="modal-sheet">
+    <div class="modal-sheet nf-sheet">
         <div class="sheet-handle"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid var(--border);">
-            <h2 style="margin:0; font-size:1.5rem;">Notifications</h2>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div onclick="app.clearNotifications()" style="font-size:0.78rem; font-weight:700; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i> Clear</div>
-                <div onclick="ui.closeModal()" style="width:35px; height:35px; background:var(--bg-input); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+
+        <div class="nf-head">
+            <div class="nf-head-ico"><i class="fa-solid fa-bell"></i></div>
+            <div class="nf-head-txt">
+                <h2>Notifications</h2>
+                <span id="notif-count" class="nf-count">0 new</span>
+            </div>
+            <div class="nf-head-actions">
+                <button type="button" id="notif-clear-btn" class="nf-clear" onclick="app.clearNotifications()"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                <button type="button" class="nf-close" aria-label="Close" onclick="ui.closeModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
-        <div id="notif-list-container" style="padding-bottom:20px;"></div>
 
+        <!-- inline confirm (replaces the browser confirm box) -->
+        <div id="notif-confirm" class="nf-confirm" aria-hidden="true">
+            <div class="nf-confirm-clip">
+                <div class="nf-confirm-box">
+                    <div class="nf-confirm-ico"><i class="fa-solid fa-trash-can"></i></div>
+                    <div class="nf-confirm-txt">
+                        <b id="notif-confirm-title">Clear all notifications?</b>
+                        <span id="notif-confirm-sub">Delete all notifications permanently? This cannot be undone.</span>
+                    </div>
+                    <div class="nf-confirm-btns">
+                        <button type="button" class="nf-btn nf-btn-ghost" id="notif-confirm-no" onclick="app.cancelClearNotifications()">Keep them</button>
+                        <button type="button" class="nf-btn nf-btn-danger" id="notif-confirm-yes" onclick="app.confirmClearNotifications()">Yes, delete all</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="notif-list-container" class="nf-list"></div>
     </div>
 </div>
