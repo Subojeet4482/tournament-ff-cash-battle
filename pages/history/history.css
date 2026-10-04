@@ -7,3 +7,22 @@
 .trx-status { font-size:0.65rem; padding:2px 8px; border-radius:4px; font-weight:700; text-transform:uppercase; }
 .status-success{background:#dcfce7;color:#16a34a}
 .status-pending{background:#fef3c7;color:#d97706}
+
+/* More statuses: processing / failed / rejected / refunded / cancelled */
+.status-processing{background:#dbeafe;color:#2563eb}
+.status-failed,.status-rejected{background:#fee2e2;color:#dc2626}
+.status-refunded{background:#e0e7ff;color:#4f46e5}
+.status-cancelled{background:#e2e8f0;color:#64748b}
+.icon-refund{background:#e0e7ff;color:#4f46e5}
+.trx-note{font-size:.7rem; font-weight:600; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.trx-note.tone-warn{color:#d97706}.trx-note.tone-info{color:#2563eb}.trx-note.tone-success{color:#16a34a}.trx-note.tone-danger{color:#dc2626}.trx-note.tone-muted{color:var(--text-muted)}
+.trx-item h4{ overflow:hidden; text-overflow:ellipsis; }
+body.dark .status-success{background:rgba(16,185,129,.16);color:#34d399}
+body.dark .status-pending{background:rgba(245,158,11,.16);color:#fbbf24}
+body.dark .status-processing{background:rgba(59,130,246,.18);color:#60a5fa}
+body.dark .status-failed,body.dark .status-rejected{background:rgba(239,68,68,.16);color:#f87171}
+body.dark .status-refunded,body.dark .icon-refund{background:rgba(99,102,241,.2);color:#a5b4fc}
+body.dark .status-cancelled{background:rgba(148,163,184,.16);color:#94a3b8}
+body.dark .icon-deposit{background:rgba(16,185,129,.16);color:#34d399}
+body.dark .icon-withdraw{background:rgba(239,68,68,.16);color:#f87171}
+body.dark .icon-game{background:rgba(99,102,241,.2);color:#a5b4fc}
