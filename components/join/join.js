@@ -16,12 +16,12 @@ Object.assign(window.app, {
         else { btn.disabled=false; btn.innerText="Pay & Join"; balStatus.innerHTML=`₹${totalBal.toFixed(2)} <span class="bal-ok">(OK)</span>`; }
     },
     openJoin: (id) => {
-        // Duplicate check - ek match mein sirf 1 baar
-        if((window.db.joined_ids||[]).includes(id)) return window.ui.toast("Aap already join kar chuke hain!");
+        // Duplicate check - a match can be joined only once
+        if((window.db.joined_ids||[]).includes(id)) return window.ui.toast("You have already joined this match.");
         const cached=(window.db.matches||[]).find(x=>x.id===id);
         const open=(m)=>{
-            if((m.joined||0)>=(m.total||48)) return window.ui.toast("Match full ho chuka hai");
-            const _fe=document.getElementById('join-fee'); if(_fe) delete _fe.dataset.val;   // fee count-up har open par chale
+            if((m.joined||0)>=(m.total||48)) return window.ui.toast("This match is full. Please try another match.");
+            const _fe=document.getElementById('join-fee'); if(_fe) delete _fe.dataset.val;   // fee count-up runs on every open
             window.fx.joinDoneHide();
             document.getElementById('join-steps').dataset.step='1';
             const _s1=document.getElementById('join-step1'); _s1.classList.remove('hidden','join-out');
@@ -30,31 +30,31 @@ Object.assign(window.app, {
             window.app.selectedSlot=null;
             window.ui.openModal('modal-join');
         };
-        // FAST PATH: cached match se sheet TURANT khulti hai (network ka wait nahi)
+        // FAST PATH: the sheet opens INSTANTLY from the cached match (no network wait)
         if(cached){
             open(cached);
-            // Background mein fresh data — agar match beech mein full/delete ho gaya to band kar do
+            // Fresh data in the background — close the sheet if the match became full/deleted meanwhile
             getDoc(doc(dbService,"matches",id)).then(fresh=>{
                 const current=window.app.currentMatch;
-                if(!current || current.id!==id) return;               // user ne modal band/change kar diya
-                if(!fresh.exists()){ window.ui.closeModal(); return window.ui.toast("Match available nahi hai"); }
+                if(!current || current.id!==id) return;               // the user closed/changed the modal
+                if(!fresh.exists()){ window.ui.closeModal(); return window.ui.toast("This match is no longer available."); }
                 const m={id:fresh.id, ...fresh.data()};
                 const idx=window.db.matches.findIndex(x=>x.id===id); if(idx>=0) window.db.matches[idx]=m;
                 const step1=document.getElementById('join-step1');
-                if(step1 && !step1.classList.contains('hidden')){     // sirf tab jab abhi payment step par hai
-                    if((m.joined||0)>=(m.total||48)){ window.ui.closeModal(); return window.ui.toast("Match full ho chuka hai"); }
+                if(step1 && !step1.classList.contains('hidden')){     // only while still on the payment step
+                    if((m.joined||0)>=(m.total||48)){ window.ui.closeModal(); return window.ui.toast("This match just got full. Please try another match."); }
                     window.app._fillJoin(m);
                 }
             }).catch(()=>{});
             return;
         }
-        // SLOW PATH (cache khali): ek baar fetch karo
+        // SLOW PATH (cache empty): fetch once
         getDoc(doc(dbService,"matches",id)).then(fresh=>{
-            if(!fresh.exists()) return window.ui.toast("Match available nahi hai");
+            if(!fresh.exists()) return window.ui.toast("This match is no longer available.");
             const m={id:fresh.id, ...fresh.data()};
             (window.db.matches=window.db.matches||[]).push(m);
             open(m);
-        }).catch(()=>window.ui.toast("Network error, dobara try karein"));
+        }).catch(()=>window.ui.toast("Network error. Please check your internet connection and try again."));
     },
     confirmJoin: async () => {
         const match=window.app.currentMatch; const fee=parseFloat(match.fee);
@@ -81,7 +81,7 @@ Object.assign(window.app, {
             if((cur.joined_matches||[]).includes(match.id)){ window.app.endAction('join_'+match.id,false); btn.disabled=false; btn.innerText="Pay & Join"; return window.ui.toast("Already joined!"); }
             if(dep+wd<fee){ window.app.endAction('join_'+match.id,false); btn.disabled=false; btn.innerText="Pay & Join"; return window.ui.toast("Insufficient Balance!"); }
             let payFromDep=Math.min(dep,fee); let payFromWd=fee-payFromDep;
-            // ATOMIC: match entry + wallet debit ek hi commit mein (beech mein fail hone par half-join nahi hoga)
+            // ATOMIC: match entry + wallet debit in a single commit (no half-join if it fails midway)
             const _b=writeBatch(dbService);
             _b.update(doc(dbService,"matches",match.id),{joined:increment(1),participants:arrayUnion({uid:window.db.user_uid,appName:cur.appName||window.db.user_name,gameName,gameUid})});
             _b.update(doc(dbService,"users",window.db.user_uid),{depositBalance:dep-payFromDep,withdrawBalance:wd-payFromWd,joined_matches:arrayUnion(match.id),matchesPlayed:(cur.matchesPlayed||0)+1,gameName,gameUid});
@@ -90,14 +90,14 @@ Object.assign(window.app, {
             window.db.joined_ids.push(match.id);
             window.app.endAction('join_'+match.id,true);
             // Success animation -> slide to slot step
-            await window.fx.joinDone('Payment Successful', '₹'+fee+' paid • ab apna slot chuno', {hold:900});
+            await window.fx.joinDone('Payment Successful', '₹'+fee+' paid • now choose your slot', {hold:900});
             document.getElementById('join-steps').dataset.step='2';
             const _s1=document.getElementById('join-step1'), _s2=document.getElementById('join-step2');
             _s1.classList.add('join-out'); await window.fx.wait(230);
             _s1.classList.add('hidden'); _s1.classList.remove('join-out');
             _s2.classList.remove('hidden'); _s2.classList.remove('join-in'); void _s2.offsetWidth; _s2.classList.add('join-in');
             { const g=document.getElementById('slot-grid'); if(g) g.innerHTML='<div class="slot-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading slots…</div>'; }
-            // Fresh match fetch karke slot grid render — dusre players ke takenSlots bhi dikhe
+            // Fetch the fresh match and render the slot grid — so other players' takenSlots show too
             try {
                 const _fresh=await getDoc(doc(dbService,"matches",match.id));
                 if(_fresh.exists()){
@@ -118,7 +118,7 @@ Object.assign(window.app, {
             if(Array.isArray(p.slots)) p.slots.forEach(s=>{ slotMap[s]=p.appName||p.gameName||'Player'; });
         });
         const myName = window.db.user_data.appName || window.db.user_name || 'You';
-        document.getElementById('slot-hint').innerText='Free Fire custom room jaisa — sirf ek slot box choose karo, aapka naam us box me aa jaayega';
+        document.getElementById('slot-hint').innerText='Just like a Free Fire custom room — choose one slot box and your name will appear in it';
         const grid=document.getElementById('slot-grid');
         grid.innerHTML='';
         for(let i=1;i<=total;i++){
@@ -139,7 +139,7 @@ Object.assign(window.app, {
     },
     selectSlot: (slot, size, total, taken) => {
         // Single-slot only (FF custom-room style)
-        if(slot>total||taken.includes(slot)){ window.ui.toast(`Slot ${slot} available nahi hai`); return; }
+        if(slot>total||taken.includes(slot)){ window.ui.toast(`Slot ${slot} is not available. Please pick another slot.`); return; }
         const slots=[slot];
         window.app.selectedSlot=slots;
         const myName = window.app._myName || window.db.user_data.appName || 'You';
@@ -167,7 +167,7 @@ Object.assign(window.app, {
     },
     confirmSlot: async () => {
         const match=window.app.currentMatch; const slots=window.app.selectedSlot;
-        if(!slots||!slots.length) return window.ui.toast("Slot select karo pehle!");
+        if(!slots||!slots.length) return window.ui.toast("Please select a slot first.");
         const _btn=document.getElementById('btn-confirm-slot');
         const _oldTxt=_btn?_btn.innerText:'';
         if(_btn){ _btn.disabled=true; _btn.innerText='Confirming...'; }
@@ -194,9 +194,9 @@ Object.assign(window.app, {
             setTimeout(window.fx.joinDoneHide, 600);
             window.ui.toast(`Slot #${slots.join(',')} confirmed! ✅`);
         } catch(e){
-            // Slot kisi aur ne le liya — user already joined hai, bas dusra slot chuno (refund ki zaroorat nahi)
+            // Someone else took the slot — the user has already joined, just pick another slot (no refund needed)
             if(String(e.message||'').startsWith('SLOT_TAKEN')){
-                window.ui.toast("Ye slot abhi kisi aur ne le liya — dusra slot chuno");
+                window.ui.toast("Someone just took this slot. Your entry is safe — please choose another slot.");
                 window.app.selectedSlot=null;
                 try {
                     const _f=await getDoc(doc(dbService,"matches",match.id));
