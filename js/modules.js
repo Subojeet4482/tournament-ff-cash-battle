@@ -8,11 +8,13 @@
 import './core/firebase.js';
 import './core/state.js';
 import './core/fx.js';
+import './core/messages.js';
 import './core/timers.js';
 
 // Auth (creates window.auth, then extends it)
 import '../pages/login/login.js';
 import '../pages/register/register.js';
+import '../pages/login/forgot.js';
 import '../components/session/session.js';
 
 // App core (creates window.app) + feature extensions
@@ -35,6 +37,9 @@ import '../pages/history/history.js';
 // UI + navigation
 import './core/ui.js';
 import './core/nav.js';
+import '../components/toast/notify.js';
+import './core/polish.js';
+import './core/live.js';
 
 // Chat (chat.js creates window.chat, rest extend it)
 import '../pages/chat/chat.js';
@@ -50,6 +55,8 @@ import '../pages/chat/discover/discover.js';
 // Shell behaviour
 import './core/history-manager.js';
 import '../components/header/header.js';
+import '../components/drawer/drawer.js';
+import '../components/trx-detail/trx-detail.js';
 
 // Chat v2 enhancements (must come after chat parts)
 import '../pages/chat/enhancements.js';
