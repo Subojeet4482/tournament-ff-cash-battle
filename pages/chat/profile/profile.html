@@ -1,0 +1,30 @@
+<!-- 1. PROFILE (full-screen: no top bar, floating back+edit over banner) -->
+<div id="chat-sub-profile" class="chat-sub-view hidden">
+    <!-- Floating actions overlay -->
+    <button class="cp-float-btn cp-float-back" onclick="chat.backToHub()" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="cp-float-btn cp-float-edit" onclick="chat.openEditProfile()" aria-label="Edit profile"><i class="fa-solid fa-pen"></i></button>
+
+    <div class="profile-hero cp-hero-lg" id="cp-cover" onclick="chat.uploadProfileImage('cover')" title="Tap to change cover"></div>
+    <div class="profile-info-card">
+        <div class="cp-av-wrap" onclick="chat.uploadProfileImage('avatar')" title="Tap to change photo"><div class="profile-avatar-big" id="cp-avatar">?</div><span class="cp-cam"><i class="fa-solid fa-camera"></i></span></div>
+        <div class="profile-name" id="cp-name" onclick="chat.uploadProfileImage('avatar')" style="cursor:pointer;">User <i class="fa-solid fa-circle-check fi-badge-verified hidden" id="cp-verified"></i></div>
+        <div class="profile-username" id="cp-username">@user <span id="cp-privacy-badge" style="display:none;font-size:0.7rem;color:var(--text-muted);"><i class="fa-solid fa-lock"></i> Private</span></div>
+        <div class="profile-bio" id="cp-bio">No bio yet.</div>
+        <div class="profile-meta">
+            <div class="pm-item" onclick="chat.scrollFriends()"><div class="pm-v" id="cp-friends">0</div><div class="pm-l">Friends</div></div>
+            <div class="pm-item"><div class="pm-v" id="cp-chats">0</div><div class="pm-l">Chats</div></div>
+            <div class="pm-item"><div class="pm-v" id="cp-status" style="font-size:0.85rem;">●</div><div class="pm-l">Status</div></div>
+        </div>
+    </div>
+    <!-- Friends list on own profile (with chat + 3-dot menu per row) -->
+    <div id="cp-friends-section" class="cp-section" style="padding:16px;">
+        <div style="font-weight:800;margin-bottom:10px;font-size:0.95rem;display:flex;align-items:center;justify-content:space-between;">
+            <span>My Friends <span id="cp-friends-count" style="color:var(--text-muted);font-weight:500;font-size:0.8rem;"></span></span>
+            <button onclick="chat.openSub('search')" style="border:none;background:var(--bg-input);color:var(--text-main);padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fa-solid fa-user-plus"></i> Add</button>
+        </div>
+        <div id="cp-friends-grid"></div>
+    </div>
+    <div style="padding:8px 20px 24px;color:var(--text-muted);font-size:0.72rem;text-align:center;">
+        <div>Last seen: <span id="cp-lastseen">just now</span></div>
+    </div>
+</div>
