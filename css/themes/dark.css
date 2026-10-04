@@ -1,0 +1,33 @@
+/* Dark mode overrides (loaded LAST on purpose) */
+body.dark {
+    --bg-body:#0f172a; --bg-card:#1e293b; --bg-input:#334155;
+    --text-main:#f1f5f9; --text-muted:#94a3b8; --border:#334155;
+}
+body.dark header, body.dark .nav-bar { background:var(--bg-card); border-color:var(--border); }
+body.dark .drawer, body.dark .profile-section { background:var(--bg-card); }
+body.dark .modal-sheet { background:var(--bg-card); }
+body.dark .auth-card { background:#1e293b; }
+body.dark .match-card, body.dark .mm-card, body.dark .rank-item { background:var(--bg-card); border-color:var(--border); }
+body.dark .card-stats-grid { background:#0f172a; border-color:var(--border); }
+body.dark .credit-card { background:linear-gradient(135deg,#3730a3,#4f46e5); }
+body.dark .filter-chip { background:var(--bg-card); border-color:var(--border); color:var(--text-muted); }
+body.dark .trx-item { background:var(--bg-card); border-color:var(--border); }
+body.dark .mm-tabs-wrapper { background:var(--bg-card); border-color:var(--border); }
+body.dark .p-game-details { background:#334155; }
+body.dark .drawer-stats .ds-box { background:#0f172a; border-color:var(--border); }
+body.dark .action-icon { background:var(--bg-body); border-color:var(--border); }
+body.dark .input-box { background:var(--bg-input); color:var(--text-main); }
+body.dark .podium-section { background:var(--bg-card); }
+body.dark .wallet-actions { background:var(--bg-card); }
+body.dark .notif-card { background:var(--bg-card); border-color:var(--border); }
+body.dark .wd-method-card { background:var(--bg-card); border-color:var(--border); }
+body.dark .wd-method-card.selected { border-color:var(--primary); background:#1e293b; }
+body.dark .wd-info-box { background:#0f172a; border-color:var(--border); }
+body.dark .crypto-network-chip { background:var(--bg-input); border-color:var(--border); }
+body.dark .crypto-network-chip.selected { background:#1e1a4e; border-color:var(--primary); }
+body.dark .input-box:focus { background:var(--bg-card); }
+body.dark .toggle-track { background:var(--primary); }
+body.dark .toggle-dot { left:20px; }
+body.dark .wd-method-card.selected { background:#1e1a4e; }
+body.dark .crypto-network-chip.selected { background:#1e1a4e; }
+body.dark .claim-card { background:linear-gradient(135deg,#1e1b4b,#3b0764); border-color:var(--primary); }
