@@ -1,0 +1,10 @@
+/* Loading skeletons (shimmer) */
+.skeleton-anim { background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; color:transparent !important; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk-card { height:260px; margin:0 20px 25px; border-radius:20px; background:white; border:1px solid var(--border); overflow:hidden; }
+.sk-banner { height:140px; width:100%; }
+.sk-body { padding:15px; }
+.sk-row { display:flex; gap:10px; margin-bottom:10px; }
+.sk-box { flex:1; height:50px; border-radius:12px; }
+.sk-line { height:10px; margin-bottom:8px; border-radius:5px; }
+.sk-btn { height:45px; width:100%; border-radius:12px; margin-top:10px; }
