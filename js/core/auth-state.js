@@ -4,10 +4,16 @@
 import { onAuthStateChanged, authService } from './firebase.js';
 
 onAuthStateChanged(authService, async (user) => {
+    if(user && window.auth._needsVerify && window.auth._needsVerify(user)){
+        // within the 60s register window, resume/clean up the pending account (skip if register() is running)
+        if(window.auth._resumePending && !window.auth._registering) window.auth._resumePending(user);
+        user = null; // treated as a guest until the email is verified
+    }
     if(user) {
         window.db.user_uid=user.uid; window.db.user_name=user.displayName||"Player";
-        if(window.auth._ensureProfile && (user.providerData||[]).some(p=>p.providerId==='google.com')) await window.auth._ensureProfile(user);
+        if(window.auth._ensureProfile && ((user.providerData||[]).some(p=>p.providerId==='google.com') || Date.parse((user.metadata&&user.metadata.creationTime)||0) >= (window.auth._verifyFrom||Infinity))) await window.auth._ensureProfile(user);
         await window.app.fetchUserData();
+        if(window.live) window.live.start(user.uid);
         document.getElementById('drawer-guest').classList.remove('guest-show'); document.getElementById('drawer-guest').classList.add('guest-hidden');
         document.getElementById('drawer-user').classList.remove('guest-hidden'); document.getElementById('menu-logout').classList.remove('guest-hidden');
         const d=window.db.user_data;
@@ -24,6 +30,7 @@ onAuthStateChanged(authService, async (user) => {
         await window.app.fetchTransactions();
         window.app.scheduleMonthlyCleanup();
     } else {
+        if(window.live) window.live.stop();
         window.db.user_uid=null; window.db.user_data={}; window.db.balance=0; window.db.depositBalance=0; window.db.withdrawBalance=0; window.db.joined_ids=[];
         document.getElementById('ban-overlay').style.display='none';
         document.getElementById('drawer-guest').classList.add('guest-show'); document.getElementById('drawer-guest').classList.remove('guest-hidden');
