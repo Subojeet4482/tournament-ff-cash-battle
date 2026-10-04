@@ -16,10 +16,10 @@ Object.assign(window.app, {
         } catch(e){ statusEl.innerHTML="<span class='text-danger'>Error</span>"; }
     },
     transfer: async () => {
-        // SECURITY: ek user dusre user ki balance nahi badha sakta (sirf admin).
-        // Client-side P2P transfer secure nahi ho sakta, isliye disable hai.
-        // (Agar chahiye to admin ya server-side function se karwana hoga.)
-        return window.ui.toast("Transfer abhi band hai. Kripya admin se sampark karein.");
+        // SECURITY: one user cannot increase another user's balance (admin only).
+        // A client-side P2P transfer cannot be made secure, so it is disabled.
+        // (If needed, it must be done by an admin or a server-side function.)
+        return window.ui.toast("Transfers are currently unavailable. Please contact support for help.");
         // eslint-disable-next-line no-unreachable
         try {
             const targetUid=window.app.recipientUid; const amount=parseFloat(document.getElementById('tr-amount').value);
