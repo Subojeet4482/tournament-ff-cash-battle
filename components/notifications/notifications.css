@@ -1,0 +1,10 @@
+/* Notifications list + claim-cash card */
+.notif-card { background:var(--bg-card); padding:15px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border); position:relative; overflow:hidden; }
+.notif-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--primary); }
+.notif-title { font-weight:700; margin-bottom:5px; color:var(--text-main); font-size:0.95rem; }
+.notif-msg { font-size:0.85rem; color:var(--text-muted); line-height:1.5; }
+.notif-date { font-size:0.7rem; color:#cbd5e1; margin-top:8px; text-align:right; font-weight:600; }
+.claim-card { border:1px solid var(--primary); background:linear-gradient(135deg,#eef2ff,#fdf2f8); border-radius:14px; padding:14px; margin-bottom:12px; }
+.claim-amt { font-size:1.6rem; font-weight:900; color:var(--primary); margin:4px 0 10px; }
+.claim-btn { width:100%; padding:11px; border:none; border-radius:12px; font-weight:800; color:#fff; background:linear-gradient(135deg,#4f46e5,#f43f5e); cursor:pointer; }
+.claim-btn:disabled { opacity:0.6; cursor:not-allowed; }
