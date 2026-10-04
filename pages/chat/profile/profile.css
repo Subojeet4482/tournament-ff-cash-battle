@@ -1,0 +1,18 @@
+/* Chat profile page */
+.profile-hero{position:relative;height:150px;background:linear-gradient(135deg,#4f46e5,#f43f5e);}
+.profile-hero.cp-hero-lg{height:200px;}
+.profile-hero img{width:100%;height:100%;object-fit:cover;}
+.cp-float-btn{position:absolute;top:14px;z-index:20;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:#fff;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.cp-float-btn:active{transform:scale(0.94);}
+.cp-float-back{left:14px;}
+.cp-float-edit{right:14px;}
+.profile-info-card{background:var(--bg-card);margin:-40px 16px 0;border-radius:18px;padding:16px;text-align:center;border:1px solid var(--border);position:relative;}
+.profile-avatar-big{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#f43f5e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin:-56px auto 8px;border:4px solid var(--bg-card);overflow:hidden;}
+.profile-avatar-big img{width:100%;height:100%;object-fit:cover;}
+.profile-name{font-weight:800;font-size:1.15rem;color:var(--text-main);display:flex;align-items:center;justify-content:center;gap:6px;}
+.profile-username{color:var(--text-muted);font-size:0.82rem;margin-bottom:6px;}
+.profile-bio{color:var(--text-main);font-size:0.85rem;margin:8px 0;}
+.profile-meta{display:flex;justify-content:space-around;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.pm-item{text-align:center;flex:1;}
+.pm-item .pm-v{font-weight:800;color:var(--text-main);}
+.pm-item .pm-l{font-size:0.68rem;color:var(--text-muted);}
