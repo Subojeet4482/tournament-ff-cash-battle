@@ -1,0 +1,71 @@
+<!-- DRAWER -->
+<div id="drawer-wrapper">
+    <div class="drawer-overlay" onclick="ui.toggleDrawer()"></div>
+    <div class="drawer">
+        <div class="profile-section">
+            <div id="drawer-guest" class="guest-show">
+                <div class="profile-top">
+                    <div class="p-avatar" style="border-color:#ccc;"><img src="https://ui-avatars.com/api/?name=Guest&background=cbd5e1&color=fff"></div>
+                    <div class="p-info"><h3>Guest User</h3><p class="text-muted">Login to participate</p></div>
+                </div>
+                <button class="btn-main btn-sm" onclick="ui.toggleDrawer(); auth.showAuth();">Login / Sign Up</button>
+            </div>
+            <div id="drawer-user" class="guest-hidden">
+                <div class="pf-cover"><span class="pf-orb o1"></span><span class="pf-orb o2"></span></div>
+                <button class="p-edit-btn" onclick="ui.openModal('modal-edit-profile')"><i class="fa-solid fa-pen"></i> Edit</button>
+                <div class="profile-top">
+                    <div class="p-avatar"><img src="" id="profile-img" alt="Avatar" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff'"><span class="p-online"></span></div>
+                    <div class="p-info">
+                        <h3 id="profile-name">User</h3>
+                        <p id="profile-phone">Not Set</p>
+                        <button type="button" class="p-id-chip" onclick="ui.copy(document.getElementById('drawer-player-id').innerText)"><i class="fa-regular fa-id-badge"></i> ID <b id="drawer-player-id">--</b> <i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+                <div class="p-game-details">
+                    <div class="pg-item"><span class="pg-lbl">Game Name</span><span class="pg-val" id="drawer-game-name">Not Set</span></div>
+                    <div class="pg-item" style="text-align:right;"><span class="pg-lbl">UID</span><span class="pg-val" id="drawer-game-uid">---</span></div>
+                </div>
+                <div class="verify-row">
+                    <div class="v-badge" id="badge-phone"><i class="fa-solid fa-check-circle"></i> Phone</div>
+                    <div class="v-badge unverified" id="badge-uid"><i class="fa-solid fa-xmark-circle"></i> UID</div>
+                </div>
+                <div class="drawer-wallet">
+                    <div class="dw-bal"><h4>Total Balance</h4><h2>₹ <span id="drawer-bal">0</span></h2></div>
+                    <button class="dw-btn" onclick="ui.toggleDrawer(); app.checkLogin(() => nav.goto('wallet', document.querySelectorAll('.nav-item')[4]))">Go to Wallet <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <div class="drawer-stats">
+                    <div class="ds-box"><div class="ds-val" id="stat-played">0</div><div class="ds-lbl">Matches</div></div>
+                    <div class="ds-box"><div class="ds-val" id="stat-won">0</div><div class="ds-lbl">Won</div></div>
+                    <div class="ds-box"><div class="ds-val text-success">₹<span id="stat-earned">0</span></div><div class="ds-lbl">Earned</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="drawer-menu">
+            <div class="dm-group">
+                <div class="dm-title">Shortcuts</div>
+                <div class="dm-item" onclick="ui.toggleDrawer(); app.checkLogin(() => { app.switchTab('join', document.querySelector('.mm-tab')); nav.goto('matches', document.querySelectorAll('.nav-item')[1]) })">
+                    <i class="fa-regular fa-calendar text-primary"></i> My Matches
+                </div>
+                <div class="dm-item" onclick="ui.toggleDrawer(); app.checkLogin(() => { app.switchTab('history', document.querySelector('.mm-tab')); nav.goto('matches', document.querySelectorAll('.nav-item')[1]) })">
+                    <i class="fa-solid fa-clock-rotate-left text-primary"></i> Match History
+                </div>
+            </div>
+            <div class="dm-group">
+                <div class="dm-title">Support & Settings</div>
+                <div class="dm-item" onclick="app.toggleDarkMode()">
+                    <i class="fa-solid fa-moon text-muted"></i> Dark Mode
+                    <div class="dm-toggle-wrap"><div class="toggle-track"><div class="toggle-dot"></div></div></div>
+                </div>
+                <div class="dm-item" onclick="ui.toggleDrawer(true); ui.openModal('modal-sound')"><i class="fa-solid fa-volume-high text-muted"></i> Sound</div>
+                <div class="dm-item" onclick="ui.toggleDrawer(); app.checkLogin(() => ui.openModal('modal-settings'))"><i class="fa-solid fa-shield-halved text-muted"></i> Security & Payment</div>
+                <div class="dm-item" onclick="app.openWhatsApp()"><i class="fa-brands fa-whatsapp text-success"></i> WhatsApp Support</div>
+                <div class="dm-item" onclick="app.openTelegram()"><i class="fa-brands fa-telegram text-primary"></i> Telegram Community</div>
+                <div class="dm-item" onclick="ui.openModal('modal-rules')"><i class="fa-solid fa-scroll text-muted"></i> Match Rules</div>
+            </div>
+            <div class="dm-group guest-hidden" id="menu-logout">
+                <div class="dm-title">Account</div>
+                <div class="dm-item danger" onclick="ui.toggleDrawer(true); auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+            </div>
+        </div>
+    </div>
+</div>
