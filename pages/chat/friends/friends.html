@@ -1,0 +1,18 @@
+<!-- 4. FRIENDS & GROUPS -->
+<div id="chat-sub-friends" class="chat-sub-view hidden">
+    <div class="chat-sub-header">
+        <div class="chat-back" onclick="chat.backToHub()"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="chat-sub-title">Chats</div>
+        <div style="margin-left:auto;" class="chat-back" onclick="chat.openNewGroup()" title="New Group"><i class="fa-solid fa-user-plus"></i></div>
+    </div>
+    <div class="chat-tabs" style="top:56px;">
+        <div class="chat-tab active" data-fctab="dm" onclick="chat.setFcTab('dm',this)">Direct</div>
+        <div class="chat-tab" data-fctab="groups" onclick="chat.setFcTab('groups',this)">Groups</div>
+        <div class="chat-tab" data-fctab="archived" onclick="chat.setFcTab('archived',this)">Archive</div>
+    </div>
+    <div class="chat-sub-body">
+        <div id="fc-dm"></div>
+        <div id="fc-groups" class="hidden"></div>
+        <div id="fc-archived" class="hidden"></div>
+    </div>
+</div>
