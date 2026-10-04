@@ -1,0 +1,5 @@
+/* Notice popup */
+#modal-notice .modal-sheet { top:50%; left:50%; bottom:auto; transform:translate(-50%,-50%) scale(0.9); width:85%; max-width:320px; border-radius:24px; text-align:center; padding:30px 25px; opacity:0; pointer-events:none; }
+#modal-notice.active .modal-sheet { transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto; }
+#modal-notice .sheet-handle { display:none; }
+.notice-icon-box { width:70px; height:70px; background:linear-gradient(135deg,var(--primary-light),#f3e8ff); color:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 15px; }
