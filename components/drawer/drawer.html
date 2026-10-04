@@ -33,6 +33,7 @@
                     <div class="dw-bal"><h4>Total Balance</h4><h2>₹ <span id="drawer-bal">0</span></h2></div>
                     <button class="dw-btn" onclick="ui.toggleDrawer(); app.checkLogin(() => nav.goto('wallet', document.querySelectorAll('.nav-item')[4]))">Go to Wallet <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
+                <div class="dw-hint"><i class="fa-solid fa-hand-pointer"></i> Pull the card out to open wallet</div>
                 <div class="drawer-stats">
                     <div class="ds-box"><div class="ds-val" id="stat-played">0</div><div class="ds-lbl">Matches</div></div>
                     <div class="ds-box"><div class="ds-val" id="stat-won">0</div><div class="ds-lbl">Won</div></div>
@@ -52,9 +53,9 @@
             </div>
             <div class="dm-group">
                 <div class="dm-title">Support & Settings</div>
-                <div class="dm-item" onclick="app.toggleDarkMode()">
-                    <i class="fa-solid fa-moon text-muted"></i> Dark Mode
-                    <div class="dm-toggle-wrap"><div class="toggle-track"><div class="toggle-dot"></div></div></div>
+                <div class="dm-item" onclick="app.toggleDarkMode(event)">
+                    <span class="theme-ico"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></span> Dark Mode
+                    <div class="dm-toggle-wrap"><div class="toggle-track theme-track"><div class="toggle-dot"></div></div></div>
                 </div>
                 <div class="dm-item" onclick="ui.toggleDrawer(true); ui.openModal('modal-sound')"><i class="fa-solid fa-volume-high text-muted"></i> Sound</div>
                 <div class="dm-item" onclick="ui.toggleDrawer(); app.checkLogin(() => ui.openModal('modal-settings'))"><i class="fa-solid fa-shield-halved text-muted"></i> Security & Payment</div>
