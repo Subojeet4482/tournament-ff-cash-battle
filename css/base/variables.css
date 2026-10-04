@@ -1,0 +1,8 @@
+/* Design tokens (colors, radius, nav height) */
+:root {
+    --bg-body:#f8fafc; --bg-card:#ffffff; --bg-input:#f1f5f9;
+    --primary:#4f46e5; --primary-dark:#3730a3; --primary-light:#e0e7ff;
+    --accent:#f43f5e; --text-main:#0f172a; --text-muted:#64748b;
+    --success:#10b981; --warning:#f59e0b; --danger:#ef4444;
+    --nav-height:65px; --radius:16px; --border:#e2e8f0;
+}
