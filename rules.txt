@@ -5,8 +5,8 @@ service cloud.firestore {
     // ============================== HELPERS ==============================
     function signedIn() { return request.auth != null; }
 
-    // ADMIN: admin.html isi email se login karta hai.
-    // Stronger: email check ki jagah  request.auth.uid == 'YAHAN_ADMIN_UID'
+    // ADMIN: admin.html logs in with this same email.
+    // Stronger: instead of the email check, use  request.auth.uid == 'YOUR_ADMIN_UID_HERE'
     function isAdmin() {
       return signedIn() && request.auth.token.email == 'chandanamandal4482@gmail.com';
     }
@@ -18,18 +18,18 @@ service cloud.firestore {
     function fampayPath(u) { return /databases/$(database)/documents/fampay_deposits/$(u); }
     function groupPath(g)  { return /databases/$(database)/documents/groups/$(g); }
 
-    // Total wallet = deposit + withdraw (purane users ke liye `balance` fallback)
+    // Total wallet = deposit + withdraw (`balance` fallback for older users)
     function totalBal(d) {
       return d.get('depositBalance', d.get('balance', 0)) + d.get('withdrawBalance', 0);
     }
 
-    // Permanent ban wale user paisa / join wale kaam nahi kar sakte
+    // Permanently banned users cannot do money / join actions
     function notBanned() {
       let u = get(userPath(request.auth.uid)).data;
       return !(u.get('isBanned', false) == true && u.get('bannedUntil', 'permanent') == 'permanent');
     }
 
-    // Chat ban (admin ke Ban user button se): chatBannedUntil = 0 (permanent) ya millis
+    // Chat ban (from the admin's Ban user button): chatBannedUntil = 0 (permanent) or millis
     function chatOk() {
       let u = get(userPath(request.auth.uid)).data;
       return !(u.get('chatBanned', false) == true &&
@@ -40,16 +40,16 @@ service cloud.firestore {
     // ================================ USERS ================================
     match /users/{userId} {
 
-      // Leaderboard, chat search, profile, playerId lookup — sab ko login chahiye
+      // Leaderboard, chat search, profile, playerId lookup — all need a login
       allow read: if signedIn();
 
-      // Register: apna doc, zero balance, koi admin/ban/verify field nahi
+      // Register: own doc only, zero balance, no admin/ban/verify fields
       allow create: if isMe(userId) && validNewUser(request.resource.data);
 
       allow update: if isMe(userId) && ownerUpdateOk()
                     || (signedIn() && !isMe(userId) && friendLinkOk());
 
-      // Delete sirf admin (neeche catch-all)
+      // Delete: admin only (see the catch-all below)
       allow delete: if false;
 
       function validNewUser(d) {
@@ -64,8 +64,8 @@ service cloud.firestore {
           && d.get('joined_matches', []).size() == 0;
       }
 
-      // User apne doc mein sirf ye fields badal sakta hai (whitelist).
-      // Locked (sirf admin): isBanned, bannedUntil, isVerified, chatBanned*, playerId, uid, email,
+      // A user can change only these fields in their own doc (whitelist).
+      // Locked (admin only): isBanned, bannedUntil, isVerified, chatBanned*, playerId, uid, email,
       // kills, matchesWon, totalEarned, score, totalWithdrawn, isAdmin/role, ...
       function ownerUpdateOk() {
         let d = request.resource.data;
@@ -77,15 +77,15 @@ service cloud.firestore {
                            'friends','pinnedFriends','blockList','outgoingReq','muted','pinnedChats','archived',
                            'joined_matches','matchesPlayed',
                            'depositBalance','withdrawBalance','totalDeposited','lastDepositUtr'])
-          // FF UID verify hone ke baad badal nahi sakta
+          // FF UID cannot be changed once verified
           && (!ch.hasAny(['gameUid']) || o.get('isUidVerified', false) == false)
-          // name change counter sirf ghat sakta hai
+          // the name-change counter can only decrease
           && (!ch.hasAny(['nameChangesLeft']) || d.nameChangesLeft < o.get('nameChangesLeft', 2))
           && balancesOk(o, d);
       }
 
-      // Withdraw balance kabhi badh nahi sakta (sirf admin credit karta hai).
-      // Deposit balance sirf ghat sakta hai, ya verified UPI deposit se badh sakta hai.
+      // Withdraw balance can never increase (only the admin credits it).
+      // Deposit balance can only decrease, or increase through a verified UPI deposit.
       function balancesOk(o, d) {
         let wdBefore  = o.get('withdrawBalance', 0);
         let wdAfter   = d.get('withdrawBalance', wdBefore);
@@ -95,8 +95,8 @@ service cloud.firestore {
           && (depAfter <= depBefore || validDepositCredit(o, d, depAfter - depBefore));
       }
 
-      // UPI auto-verify: fampay_deposits mein payment dikhni chahiye, amount match, aur
-      // usi transaction mein request 'success' + fampay doc delete hona chahiye.
+      // UPI auto-verify: the payment must exist in fampay_deposits, the amount must match, and
+      // the request must be set to 'success' + the fampay doc deleted in the same transaction.
       function validDepositCredit(o, d, delta) {
         let utr = d.get('lastDepositUtr', '');
         let rq = get(depReqPath(utr)).data;
@@ -111,7 +111,7 @@ service cloud.firestore {
           && math.abs((d.get('totalDeposited', 0) - o.get('totalDeposited', 0)) - delta) < 0.01;
       }
 
-      // Dusre user ke doc mein sirf friends / outgoingReq mein APNA uid add-remove (friend accept/remove/block)
+      // In another user's doc you may only add/remove YOUR OWN uid in friends / outgoingReq (friend accept/remove/block)
       function friendLinkOk() {
         let d = request.resource.data;
         let o = resource.data;
@@ -129,10 +129,10 @@ service cloud.firestore {
 
         allow create: if isMe(userId) && validTrxCreate(userId, request.resource.data);
 
-        // Sirf auto-verify wali UPI deposit entry (pending -> success/failed)
+        // Only the auto-verify UPI deposit entry (pending -> success/failed)
         allow update: if isMe(userId) && validDepositTrxUpdate();
 
-        // Pending entry user delete nahi kar sakta (admin ko dikhni chahiye)
+        // A user cannot delete a pending entry (the admin must be able to see it)
         allow delete: if isMe(userId) && resource.data.status != 'pending';
 
         function validTrxCreate(uid, t) {
@@ -141,7 +141,7 @@ service cloud.firestore {
               || (t.type == 'withdraw' && t.status == 'pending' && validWithdraw(uid, t));
         }
 
-        // Withdraw request tabhi banegi jab usi batch mein withdrawBalance utna ghata ho
+        // A withdraw request is created only if withdrawBalance is reduced by that amount in the same batch
         function validWithdraw(uid, t) {
           let amt = float(t.amount.split('₹')[1]);
           let before = get(userPath(uid)).data.get('withdrawBalance', 0);
@@ -162,10 +162,10 @@ service cloud.firestore {
       // --------------------- users/{uid}/notifications ----------------------
       match /notifications/{nid} {
         allow read: if isMe(userId);
-        // app khud sirf deposit-status notification banata hai (claim/cash wali nahi)
+        // the app itself creates only deposit-status notifications (not claim/cash ones)
         allow create: if isMe(userId)
           && request.resource.data.keys().hasOnly(['title','body','message','type','read','date','createdAt','timestamp']);
-        // claimCash / read mark
+        // claimCash / mark as read
         allow update: if isMe(userId)
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed','claimedAt','read']);
         allow delete: if isMe(userId);
@@ -180,12 +180,12 @@ service cloud.firestore {
 
     // =============================== MATCHES ===============================
     match /matches/{matchId} {
-      allow read: if true;                        // guest bhi match list dekh sakta hai
-      allow create, delete: if false;             // sirf admin (catch-all)
+      allow read: if true;                        // guests can also see the match list
+      allow create, delete: if false;             // admin only (catch-all)
 
       allow update: if signedIn() && (joinOk(matchId) || slotOk(matchId));
 
-      // JOIN: joined +1, participants mein sirf apna entry (last), aur usi batch mein wallet se fee kati ho
+      // JOIN: joined +1, only your own entry added to participants (last), and the fee deducted from the wallet in the same batch
       function joinOk(mid) {
         let d = request.resource.data;
         let o = resource.data;
@@ -204,7 +204,7 @@ service cloud.firestore {
           && notBanned();
       }
 
-      // SLOT CONFIRM: sirf join kiya hua user, naya slot pehle se taken nahi
+      // SLOT CONFIRM: only a user who has joined, and the new slot must not already be taken
       function slotOk(mid) {
         let d = request.resource.data;
         let o = resource.data;
@@ -223,7 +223,7 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    // Global broadcast notifications (admin bhejta hai) — init() guest ke liye bhi padhta hai
+    // Global broadcast notifications (sent by the admin) — init() reads them for guests too
     match /notifications/{id} {
       allow read: if true;
     }
@@ -236,9 +236,9 @@ service cloud.firestore {
 
 
     // ============================== PAYMENTS ===============================
-    // User ki UPI deposit request (doc id = UTR)
+    // The user's UPI deposit request (doc id = UTR)
     match /deposit_requests/{utr} {
-      // transaction.get() missing doc par bhi chalna chahiye (resource == null)
+      // transaction.get() must also work on a missing doc (resource == null)
       allow get: if signedIn() && (resource == null || resource.data.uid == request.auth.uid);
       allow list: if signedIn() && resource.data.uid == request.auth.uid;
 
@@ -263,15 +263,15 @@ service cloud.firestore {
               || (o.status in ['pending','processing'] && d.status == 'success' && fampayConsumed(u, d)));
       }
 
-      // 'success' tabhi jab fampay payment exist kare, isi transaction mein delete ho, aur amount match kare
+      // 'success' only when the fampay payment exists, is deleted in this same transaction, and the amount matches
       function fampayConsumed(u, d) {
         return exists(fampayPath(u)) && !existsAfter(fampayPath(u))
           && math.abs(float(get(fampayPath(u)).data.amount) - float(d.receivedAmount)) < 0.01;
       }
     }
 
-    // Bank/UPI payment ki entry — sirf aapka server likhta hai (Admin SDK).
-    // Client sirf apni request ke liye read + success ke time delete kar sakta hai.
+    // Bank/UPI payment entry — written only by your server (Admin SDK).
+    // The client can only read its own request and delete it at the time of success.
     match /fampay_deposits/{utr} {
       allow get: if signedIn() && exists(depReqPath(utr))
                  && get(depReqPath(utr)).data.uid == request.auth.uid;
@@ -297,14 +297,14 @@ service cloud.firestore {
         && request.resource.data.from == request.auth.uid
         && request.resource.data.to is string && request.resource.data.to != request.auth.uid
         && request.resource.data.status == 'pending';
-      // sirf receiver accept/reject kar sakta hai
+      // only the receiver can accept/reject
       allow update: if signedIn() && resource.data.to == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
         && request.resource.data.status in ['accepted', 'rejected'];
       allow delete: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
     }
 
-    // DM: doc id = "uidA__uidB" (sorted) — membership id se hi pata chal jaata hai
+    // DM: doc id = "uidA__uidB" (sorted) — membership can be derived from the id itself
     match /chats/{cid} {
       allow read: if signedIn() && request.auth.uid in cid.split('__');
       allow create, update: if signedIn() && request.auth.uid in cid.split('__')
@@ -316,7 +316,7 @@ service cloud.firestore {
         allow read: if signedIn() && request.auth.uid in cid.split('__');
         allow create: if signedIn() && request.auth.uid in cid.split('__')
           && request.resource.data.uid == request.auth.uid && chatOk();
-        // edit/delete sirf apna message; reaction koi bhi member
+        // edit/delete only your own message; any member can react
         allow update: if signedIn() && request.auth.uid in cid.split('__')
           && ((resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid)
               || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']));
@@ -329,7 +329,7 @@ service cloud.firestore {
       function isMember() { return request.auth.uid in g().get('members', []); }
       function isStaff() { return request.auth.uid == g().get('ownerUid', '') || request.auth.uid in g().get('admins', []); }
 
-      // get: invite link (?joinGroup=id) ke liye; list: sirf public ya apne groups
+      // get: for the invite link (?joinGroup=id); list: only public groups or your own
       allow get: if signedIn();
       allow list: if signedIn() && (resource.data.public == true || request.auth.uid in resource.data.members);
 
@@ -394,7 +394,7 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Reports: user bana sakta hai, padh/resolve sirf admin
+    // Reports: a user can create; only the admin can read/resolve
     match /reports/{rid} {
       allow create: if signedIn()
         && request.resource.data.reporter == request.auth.uid
@@ -405,8 +405,8 @@ service cloud.firestore {
 
     // =============================== ADMIN ================================
     // admin.html: users (+ subcollections), matches, categories, notifications, config/*,
-    // deposit_requests, world_messages, groups, reports, leaderboard, backup/restore (sab collections).
-    // collectionGroup('transactions') aur collectionGroup('messages') bhi admin ke liye khule hain.
+    // deposit_requests, world_messages, groups, reports, leaderboard, backup/restore (all collections).
+    // collectionGroup('transactions') and collectionGroup('messages') are also open to the admin.
     match /{path=**}/transactions/{id} {
       allow read: if isAdmin();
     }
@@ -421,7 +421,7 @@ service cloud.firestore {
 
 ################################################################################
 #                           STORAGE RULES  (copy from here)
-#   (Storage -> Rules tab. Chat media + profile/cover photos ke liye.)
+#   (Storage -> Rules tab. For chat media + profile/cover photos.)
 ################################################################################
 
 rules_version = '2';
@@ -430,10 +430,10 @@ service firebase.storage {
 
     function signedIn() { return request.auth != null; }
     function isAdmin() { return signedIn() && request.auth.token.email == 'chandanamandal4482@gmail.com'; }
-    // File ka naam hamesha  <uid>_<time>_<name>  hota hai (code ke hisaab se)
+    // The file name is always  <uid>_<time>_<name>  (as produced by the code)
     function mine(file) { return file.matches(request.auth.uid + '_.*'); }
 
-    // Profile + cover: image, max ~600 KB (app 500 KB tak compress karta hai)
+    // Profile + cover: image, max ~600 KB (the app compresses to 500 KB)
     match /profile/{file} {
       allow read: if signedIn();
       allow create, update: if signedIn() && mine(file)
@@ -447,7 +447,7 @@ service firebase.storage {
       allow delete: if signedIn() && mine(file);
     }
 
-    // Chat media (max 20 MB, app ki limit ke barabar)
+    // Chat media (max 20 MB, same as the app's limit)
     match /chat_images/{file} {
       allow read: if signedIn();
       allow create: if signedIn() && mine(file)
@@ -472,7 +472,7 @@ service firebase.storage {
       allow delete: if signedIn() && mine(file);
     }
 
-    // Admin kuch bhi (cleanup / manual upload)
+    // Admin can do anything (cleanup / manual upload)
     match /{allPaths=**} {
       allow read, write: if isAdmin();
     }
@@ -500,7 +500,7 @@ k();
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Reports: user bana sakta hai, padh/resolve sirf admin
+    // Reports: a user can create; only the admin can read/resolve
     match /reports/{rid} {
       allow create: if signedIn()
         && request.resource.data.reporter == request.auth.uid
@@ -511,8 +511,8 @@ k();
 
     // =============================== ADMIN ================================
     // admin.html: users (+ subcollections), matches, categories, notifications, config/*,
-    // deposit_requests, world_messages, groups, reports, leaderboard, backup/restore (sab collections).
-    // collectionGroup('transactions') aur collectionGroup('messages') bhi admin ke liye khule hain.
+    // deposit_requests, world_messages, groups, reports, leaderboard, backup/restore (all collections).
+    // collectionGroup('transactions') and collectionGroup('messages') are also open to the admin.
     match /{path=**}/transactions/{id} {
       allow read: if isAdmin();
     }
@@ -527,7 +527,7 @@ k();
 
 ################################################################################
 #                           STORAGE RULES  (copy from here)
-#   (Storage -> Rules tab. Chat media + profile/cover photos ke liye.)
+#   (Storage -> Rules tab. For chat media + profile/cover photos.)
 ################################################################################
 
 rules_version = '2';
@@ -536,10 +536,10 @@ service firebase.storage {
 
     function signedIn() { return request.auth != null; }
     function isAdmin() { return signedIn() && request.auth.token.email == 'chandanamandal4482@gmail.com'; }
-    // File ka naam hamesha  <uid>_<time>_<name>  hota hai (code ke hisaab se)
+    // The file name is always  <uid>_<time>_<name>  (as produced by the code)
     function mine(file) { return file.matches(request.auth.uid + '_.*'); }
 
-    // Profile + cover: image, max ~600 KB (app 500 KB tak compress karta hai)
+    // Profile + cover: image, max ~600 KB (the app compresses to 500 KB)
     match /profile/{file} {
       allow read: if signedIn();
       allow create, update: if signedIn() && mine(file)
@@ -553,7 +553,7 @@ service firebase.storage {
       allow delete: if signedIn() && mine(file);
     }
 
-    // Chat media (max 20 MB, app ki limit ke barabar)
+    // Chat media (max 20 MB, same as the app's limit)
     match /chat_images/{file} {
       allow read: if signedIn();
       allow create: if signedIn() && mine(file)
@@ -578,7 +578,7 @@ service firebase.storage {
       allow delete: if signedIn() && mine(file);
     }
 
-    // Admin kuch bhi (cleanup / manual upload)
+    // Admin can do anything (cleanup / manual upload)
     match /{allPaths=**} {
       allow read, write: if isAdmin();
     }
