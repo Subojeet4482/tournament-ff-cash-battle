@@ -1,0 +1,145 @@
+<!-- ===== NEW WITHDRAW MODAL ===== -->
+<div id="modal-withdraw" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0">Withdraw</h2>
+            <div onclick="ui.closeModal()" style="font-size:1.5rem; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+
+        <!-- Balance -->
+        <div class="wd-balance-box">
+            <span class="text-muted" style="font-size:0.75rem;">Available Balance</span>
+            <div style="font-size:1.3rem; font-weight:900; color:var(--primary);">₹ <span class="live-balance">0.00</span></div>
+        </div>
+
+        <!-- Method Select -->
+        <p style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Select Method</p>
+        <div class="wd-method-grid">
+            <div class="wd-method-card" id="wd-card-bank" onclick="app.selectWdMethod('bank')">
+                <div class="wd-m-icon">🏦</div>
+                <div class="wd-m-name">Bank Transfer</div>
+                <div class="wd-m-sub">IMPS / NEFT</div>
+            </div>
+            <div class="wd-method-card" id="wd-card-crypto" onclick="app.selectWdMethod('crypto')">
+                <div class="wd-m-icon">₿</div>
+                <div class="wd-m-name">Crypto</div>
+                <div class="wd-m-sub">BTC / USDT / LTC</div>
+            </div>
+        </div>
+
+        <!-- ===== BANK SECTION ===== -->
+        <div id="wd-bank-section" class="wd-section">
+            <!-- Info box -->
+            <div class="wd-info-box">
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Min Amount</span>
+                    <span class="wd-info-val orange">₹ 20</span>
+                </div>
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Processing Time</span>
+                    <span class="wd-info-val green">15 – 20 min</span>
+                </div>
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Service Fee</span>
+                    <span class="wd-info-val red">₹ 2 deducted</span>
+                </div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-name">Account Holder Name</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="wd-bank-name" class="input-box" placeholder="Name as per bank passbook" autocomplete="off" autocapitalize="words" maxlength="60">
+                </div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-account">Account Number</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <input type="text" id="wd-bank-account" class="input-box" placeholder="Enter account number" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="18" oninput="app.wdFmtAccount(this)">
+                    <span class="wd-count" id="wd-acc-count">0/18</span>
+                </div>
+                <div class="wd-hint" id="wd-acc-hint">Only digits &bull; 9 to 18 numbers</div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-ifsc">IFSC Code</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-hashtag"></i>
+                    <input type="text" id="wd-bank-ifsc" class="input-box wd-upper" placeholder="e.g. SBIN0001234" autocomplete="off" autocapitalize="characters" maxlength="11" oninput="app.wdFmtIfsc(this)">
+                    <span class="wd-count" id="wd-ifsc-count">0/11</span>
+                </div>
+                <div class="wd-hint" id="wd-ifsc-hint">11 characters &bull; 5th character is always 0</div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-amount">Amount</label>
+                <div class="wd-input">
+                    <span class="wd-rupee">₹</span>
+                    <input type="number" id="wd-bank-amount" class="input-box" placeholder="Min ₹20" inputmode="decimal" oninput="app.updateBankNet(this.value)">
+                </div>
+            </div>
+            <div id="wd-bank-net" class="wd-net" style="display:none;">
+                You will receive: ₹<span id="wd-bank-net-val">0</span>
+            </div>
+            <button class="btn-main" onclick="app.withdrawBank()">Submit Bank Withdrawal</button>
+        </div>
+
+        <!-- ===== CRYPTO SECTION ===== -->
+        <div id="wd-crypto-section" class="wd-section">
+            <!-- Info box -->
+            <div class="wd-info-box">
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Min Amount</span>
+                    <span class="wd-info-val orange">₹ 20</span>
+                </div>
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Processing Time</span>
+                    <span class="wd-info-val green">15 – 20 min</span>
+                </div>
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Service Fee</span>
+                    <span class="wd-info-val red">₹ 2 deducted</span>
+                </div>
+            </div>
+
+            <label style="font-size:0.8rem; color:var(--text-muted); font-weight:700; display:block; margin-bottom:8px;">Select Coin</label>
+            <div class="crypto-network-wrap">
+                <div class="crypto-network-chip selected" id="cn-ltc" onclick="app.selectCoin('LTC')">Ł Litecoin</div>
+                <div class="crypto-network-chip" id="cn-btc" onclick="app.selectCoin('BTC')">₿ Bitcoin</div>
+                <div class="crypto-network-chip" id="cn-usdt" onclick="app.selectCoin('USDT')">💵 USDT</div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-crypto-network">Network (Type)</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <input type="text" id="wd-crypto-network" class="input-box" placeholder="e.g. TRC20 / BEP20 / Mainnet" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-crypto-addr">Wallet Address</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-wallet"></i>
+                    <input type="text" id="wd-crypto-addr" class="input-box" placeholder="Paste your wallet address" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-crypto-amount">Amount</label>
+                <div class="wd-input">
+                    <span class="wd-rupee">₹</span>
+                    <input type="number" id="wd-crypto-amount" class="input-box" placeholder="Min ₹20" inputmode="decimal" oninput="app.updateCryptoNet(this.value)">
+                </div>
+            </div>
+            <div id="wd-crypto-net" class="wd-net" style="display:none;">
+                You will receive: ₹<span id="wd-crypto-net-val">0</span>
+            </div>
+            <button class="btn-main" onclick="app.withdrawCrypto()">Submit Crypto Withdrawal</button>
+        </div>
+    </div>
+</div>
