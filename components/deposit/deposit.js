@@ -17,18 +17,18 @@ Object.assign(window.app, {
         }
         const amt=document.getElementById('dep-crypto-amount').value;
         const trx=document.getElementById('dep-crypto-hash').value.trim();
-        if(!amt) return window.ui.toast("Enter amount");
-        if(!trx) return window.ui.toast("Transaction Hash required");
+        if(!amt) return window.ui.toast(window.msg.deposit.enterAmount());
+        if(!trx) return window.ui.toast(window.msg.deposit.needHash());
         if(!window.app.rateLimit('deposit',60000)) return;
         const btn=document.querySelector(`#modal-deposit .btn-main[onclick*="deposit('crypto')"]`); if(btn) btn.disabled=true;
         window.ui.toast("Processing...");
         try {
             await addDoc(collection(dbService,"users",window.db.user_uid,"transactions"),{
-                title:`Deposit: ₹${amt} pending`,
+                title:window.msg.deposit.title.review(amt),
                 amount:`+₹${amt}`, type:"deposit", status:"pending", trxId:trx, method:"CRYPTO",
                 date:new Date().toLocaleDateString(), createdAt:Date.now(), timestamp:serverTimestamp()
             });
-            window.ui.closeModal(); window.ui.toast("Request Submitted!");
+            window.ui.closeModal(); window.ui.toast(window.msg.deposit.cryptoSent());
             window.app.endAction('deposit',true);
             window.app.fetchTransactions();
         } catch(e){ window.app.endAction('deposit',false); window.ui.toast("Error: "+e.message); }
@@ -38,12 +38,12 @@ Object.assign(window.app, {
         const amtRaw=document.getElementById('dep-amount').value;
         const utr=document.getElementById('dep-utr').value.trim();
         const amt=parseFloat(amtRaw);
-        if(!amt || isNaN(amt)) return window.ui.toast("Enter amount");
-        if(amt < 5) return window.ui.toast("Minimum deposit is ₹5");
-        if(!utr || utr.length < 6) return window.ui.toast("Enter valid UTR / Transaction ID");
+        if(!amt || isNaN(amt)) return window.ui.toast(window.msg.deposit.enterAmount());
+        if(amt < 5) return window.ui.toast(window.msg.deposit.minAmount());
+        if(!utr || utr.length < 6) return window.ui.toast(window.msg.deposit.badUtr());
         if(!window.app.rateLimit('deposit_'+utr,15000)) return;
         const uid=window.db.user_uid;
-        if(!uid) return window.ui.toast("Login required");
+        if(!uid) return window.ui.toast(window.msg.deposit.needLogin());
         const btn=document.querySelector(`#modal-deposit .btn-main[onclick*="deposit('upi')"]`);
         if(btn) btn.disabled=true;
         const reqRef=doc(dbService,"deposit_requests",utr);
@@ -54,10 +54,10 @@ Object.assign(window.app, {
                 const cur=await tx.get(reqRef);
                 if(cur.exists()){
                     const d=cur.data();
-                    if(d.status==='success') throw new Error("This UTR is already used");
-                    if(d.uid && d.uid!==uid) throw new Error("This UTR belongs to another user");
-                    if(d.status==='failed' || d.status==='mismatch') throw new Error("This UTR was already rejected. Contact support.");
-                    if(d.amount && Math.abs(parseFloat(d.amount)-amt)>0.01) throw new Error("Different amount already submitted for this UTR");
+                    if(d.status==='success') throw new Error(window.msg.deposit.utrUsed());
+                    if(d.uid && d.uid!==uid) throw new Error(window.msg.deposit.utrOther());
+                    if(d.status==='failed' || d.status==='mismatch') throw new Error(window.msg.deposit.utrRejected());
+                    if(d.amount && Math.abs(parseFloat(d.amount)-amt)>0.01) throw new Error(window.msg.deposit.utrAmount());
                     resumed=true;
                     return;
                 }
@@ -68,14 +68,14 @@ Object.assign(window.app, {
             });
         } catch(e){
             if(btn) btn.disabled=false;
-            return window.ui.toast(e.message||"Failed to submit");
+            return window.ui.toast(e.message||window.msg.deposit.submitFailed());
         }
         // Pending transaction record
         let trxDocId=null;
         try {
             if(!resumed){
                 const trxRef=await addDoc(collection(dbService,"users",uid,"transactions"),{
-                    title:`Deposit: ₹${amt} verifying...`,
+                    title:window.msg.deposit.title.pending(amt),
                     amount:`+₹${amt}`, type:"deposit", status:"pending", trxId:utr, method:"UPI",
                     date:new Date().toLocaleDateString(), createdAt:now, timestamp:serverTimestamp()
                 });
@@ -118,14 +118,14 @@ Object.assign(window.app, {
     _depositNotify: async (uid, title, body) => {
         try {
             await addDoc(collection(dbService,"users",uid,"notifications"),{
-                title, body, type:'deposit', read:false, createdAt:Date.now(), timestamp:serverTimestamp()
+                title, body, message:body, type:'deposit', read:false, date:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}), createdAt:Date.now(), timestamp:serverTimestamp()
             });
         } catch(_){}
     },
     startDepositPoll: (utr, amt, uid, opts) => {
         opts=opts||{};
         if(window.app._activeDepositPolls[utr]) {
-            if(opts.overlay) window.app._showVerifyOverlay('Verifying payment...','Already checking this UTR. Please wait.','loading');
+            if(opts.overlay) window.app._showVerifyOverlay(window.msg.deposit.alreadyChecking.title,window.msg.deposit.alreadyChecking.sub,'loading');
             return;
         }
         window.app._activeDepositPolls[utr] = true;
@@ -133,31 +133,32 @@ Object.assign(window.app, {
 
         const onSuccess=async (received, trxDocId)=>{
             if(trxDocId){
-                try { await updateDoc(doc(dbService,"users",uid,"transactions",trxDocId),{ status:'success', title:`Deposit: ₹${received} successful` }); } catch(_){}
+                try { await updateDoc(doc(dbService,"users",uid,"transactions",trxDocId),{ status:'success', title:window.msg.deposit.title.success(received) }); } catch(_){}
             }
-            await window.app._depositNotify(uid,'Deposit Successful',`₹${received} credited to your deposit balance (UTR: ${utr}).`);
+            { const n=window.msg.deposit.successNotify(received,utr); await window.app._depositNotify(uid,n.title,n.body); }
             try { await window.app.fetchUserData(); } catch(_){}
             try { await window.app.fetchTransactions(); } catch(_){}
-            if(opts.overlay) window.app._showVerifyOverlay('Payment Verified!',`₹${received} added to your deposit balance.`,'success');
-            else window.ui.toast(`✅ ₹${received} credited to your wallet!`);
+            if(opts.overlay){ const m=window.msg.deposit.success(received); window.app._showVerifyOverlay(m.title,m.sub,'success'); }
         };
 
         const onFail=async (trxDocId)=>{
+            const F=window.msg.deposit.fail(amt, utr, lastSeen);
             try { await updateDoc(reqRef,{status:'failed', failedAt:Date.now()}); } catch(_){}
             if(trxDocId){
-                try { await updateDoc(doc(dbService,"users",uid,"transactions",trxDocId),{ status:'failed', title:`Deposit ₹${amt} not verified — contact admin` }); } catch(_){}
+                try { await updateDoc(doc(dbService,"users",uid,"transactions",trxDocId),{ status:'failed', title:window.msg.deposit.title.failed(amt) }); } catch(_){}
             }
-            await window.app._depositNotify(uid,'Deposit Not Verified',`We could not verify your payment of ₹${amt} (UTR: ${utr}). Please contact admin / support for help.`);
+            await window.app._depositNotify(uid,F.title,F.body);
             try { await window.app.fetchTransactions(); } catch(_){}
-            if(opts.overlay) window.app._showVerifyOverlay('Not Verified','We could not match your UTR. Please contact admin / support.','fail');
-            else window.ui.toast('Deposit not verified. Please contact admin.');
+            if(opts.overlay) window.app._showVerifyOverlay(F.title,F.sub,'fail');
+            else window.ui.toast(F.toast);
         };
 
         const finish=()=>{ delete window.app._activeDepositPolls[utr]; };
+        let lastSeen=null; // last bank-check result (used to explain WHY a deposit failed)
 
         // FOREGROUND phase: 10s window, polls at 1,3,5,7,9s (5 checks)
         const runForeground = async () => {
-            window.app._showVerifyOverlay('Verifying payment...','Matching your UTR with bank record. Please wait ~10 seconds.','loading');
+            window.app._showVerifyOverlay(window.msg.deposit.verifying.title,window.msg.deposit.verifying.sub,'loading');
             const timer=document.getElementById('dvo-timer');
             let remaining=10;
             const tick=setInterval(()=>{ remaining--; if(timer && remaining>=0) timer.innerText='Checking... '+remaining+'s'; }, 1000);
@@ -165,7 +166,7 @@ Object.assign(window.app, {
             for(const wait of delays){
                 await new Promise(r=>setTimeout(r,wait));
                 try {
-                    const res=await window.app._checkFampay(utr, amt, uid);
+                    const res=await window.app._checkFampay(utr, amt, uid); lastSeen=res;
                     if(res.status==='success'){ clearInterval(tick); await onSuccess(res.amount, res.trxDocId); finish(); return; }
                     if(res.status==='gone' || res.status==='failed'){ clearInterval(tick); window.app._hideVerifyOverlay(); finish(); return; }
                 } catch(_){}
@@ -174,7 +175,7 @@ Object.assign(window.app, {
             // Not matched in 10s → switch to processing background
             try { await updateDoc(reqRef,{status:'processing'}); } catch(_){}
             window.app._hideVerifyOverlay();
-            window.ui.toast('Payment is processing. We will keep checking for ~1 minute.');
+            window.ui.toast(window.msg.deposit.processingToast());
             runBackground();
         };
 
@@ -186,7 +187,7 @@ Object.assign(window.app, {
             const iv=setInterval(async ()=>{
                 attempts++;
                 try {
-                    const res=await window.app._checkFampay(utr, amt, uid);
+                    const res=await window.app._checkFampay(utr, amt, uid); lastSeen=res;
                     if(res.status==='success'){ clearInterval(iv); await onSuccess(res.amount, res.trxDocId); finish(); return; }
                     if(res.status==='gone' || res.status==='failed'){ clearInterval(iv); finish(); return; }
                 } catch(_){}
