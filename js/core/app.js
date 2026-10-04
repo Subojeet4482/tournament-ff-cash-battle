@@ -42,9 +42,9 @@ window.app = {
             const today = new Date();
             const key = `histCleanedMonth_${window.db.user_uid}`;
             const cur = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
-            // Pehli baar baseline set karo, cleanup mat chalao
+            // First run: set the baseline, don't run the cleanup
             if(!localStorage.getItem(key)){ localStorage.setItem(key,cur); return; }
-            // Jab bhi month change ho (1 tarikh ho ya 5 — koi bhi din login pe), cleanup chale
+            // Whenever the month changes (on the 1st or the 5th — whichever day they log in), run the cleanup
             if(localStorage.getItem(key)!==cur){
                 const snap = await getDocs(collection(dbService,"users",window.db.user_uid,"transactions"));
                 for(const d of snap.docs){ try{ await deleteDoc(doc(dbService,"users",window.db.user_uid,"transactions",d.id)); }catch(e){} }
@@ -71,11 +71,15 @@ window.app = {
             if(d.notice&&d.notice.trim()!=="") { document.getElementById('notice-text').innerText=d.notice; setTimeout(()=>window.ui.openModal('modal-notice'),2500); }
         } catch(e) { if(window.app.initBanner) window.app.initBanner([]); }
     },
-    fetchUserData: async () => {
-        try {
-            const snap=await getDoc(doc(dbService,"users",window.db.user_uid));
-            if(snap.exists()){
-                const d=snap.data(); window.db.user_data=d; window.db.joined_ids=d.joined_matches||[];
+    // Show the right balance for each modal (withdraw modal = withdraw bal, transfer modal = deposit bal, others = total)
+    _setLiveBalance: () => {
+        const on=(id)=>{ const m=document.getElementById(id); return m && m.classList.contains('active'); };
+        const v = on('modal-withdraw') ? window.db.withdrawBalance : on('modal-transfer') ? window.db.depositBalance : window.db.balance;
+        document.querySelectorAll('.live-balance').forEach(el=>el.innerText=Number(v||0).toFixed(2));
+    },
+    // Applies one user doc to the whole UI (used by both fetchUserData and the realtime listener)
+    applyUserDoc: (d) => {
+        window.db.user_data=d; window.db.joined_ids=d.joined_matches||[];
                 // Two balances: depositBalance (normal/play) + withdrawBalance (rewards). Backward compat with old single balance.
                 window.db.depositBalance = d.depositBalance!==undefined ? d.depositBalance : (d.balance||0);
                 window.db.withdrawBalance = d.withdrawBalance||0;
@@ -88,7 +92,7 @@ window.app = {
                 document.getElementById('stat-played').innerText=d.matchesPlayed||0;
                 document.getElementById('stat-won').innerText=d.matchesWon||0;
                 document.getElementById('stat-earned').innerText=d.totalEarned||0;
-                document.querySelectorAll('.live-balance').forEach(el=>el.innerText=window.db.balance.toFixed(2));
+                window.app._setLiveBalance();
                 const bUid=document.getElementById('badge-uid');
                 // Profile UID added => badge flips red -> green (also keeps verified state)
                 if(d.isUidVerified || (d.gameUid && String(d.gameUid).trim().length>=6)){
@@ -98,10 +102,14 @@ window.app = {
                     bUid.classList.add('unverified');
                     bUid.innerHTML='<i class="fa-solid fa-xmark-circle"></i> UID';
                 }
-                if(d.gameName) document.getElementById('game-name').value=d.gameName;
-                if(d.gameUid) document.getElementById('game-uid').value=d.gameUid;
+                { const gn=document.getElementById('game-name'); if(d.gameName && gn && document.activeElement!==gn) gn.value=d.gameName; }
+                { const gu=document.getElementById('game-uid'); if(d.gameUid && gu && document.activeElement!==gu) gu.value=d.gameUid; }
                 window.app.renderWallet();
-            }
+    },
+    fetchUserData: async () => {
+        try {
+            const snap=await getDoc(doc(dbService,"users",window.db.user_uid));
+            if(snap.exists()) window.app.applyUserDoc(snap.data());
         } catch(e){}
     },
     validateAmount: (el) => { if(el.value<0) el.value=""; },
