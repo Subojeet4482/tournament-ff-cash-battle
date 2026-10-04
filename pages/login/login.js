@@ -1,28 +1,48 @@
 /**
  * Login / logout / forgot-password + auth modal show/hide.
  */
-import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, authService } from '../../js/core/firebase.js';
+import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, sendEmailVerification, authService } from '../../js/core/firebase.js';
 
+// Only email/password accounts created AFTER this date must verify (older users are not locked out).
+// Set this to 0 to force everyone to verify.
+const VERIFY_REQUIRED_FROM = Date.parse('2026-10-04T00:00:00Z');
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
 const $ = (id) => document.getElementById(id);
 const friendly = (e) => {
     const c = (e && e.code) || '';
-    if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)) return 'Email ya password galat hai';
-    if(c === 'auth/too-many-requests') return 'Bahut zyada attempts. Thodi der baad try karo';
-    if(c === 'auth/network-request-failed') return 'Network error — internet check karo';
-    if(c === 'auth/email-already-in-use') return 'Ye email already registered hai';
-    if(c === 'auth/weak-password') return 'Password kam se kam 6 characters ka rakho';
-    if(c === 'auth/account-exists-with-different-credential') return 'Ye email pehle password se register hai — password se login karo';
-    if(c === 'auth/invalid-email') return 'Email format sahi nahi hai';
+    if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)) return 'Incorrect email or password. Please check and try again.';
+    if(c === 'auth/too-many-requests') return 'Too many attempts. Please wait a few minutes and try again.';
+    if(c === 'auth/network-request-failed') return 'Network error. Please check your internet connection.';
+    if(c === 'auth/email-already-in-use') return 'This email is already registered. Try logging in instead.';
+    if(c === 'auth/weak-password') return 'Password must be at least 6 characters long.';
+    if(c === 'auth/account-exists-with-different-credential') return 'This email is registered with a password. Please log in using your password.';
+    if(c === 'auth/unverified-email') return 'Email not verified yet. Please check your inbox (and spam folder) for the verification link.';
+    if(c === 'auth/invalid-email') return 'Please enter a valid email address.';
     return (e && e.message) || 'Something went wrong';
 };
 
 window.auth = {
     _friendly: friendly,
+    _verifyFrom: VERIFY_REQUIRED_FROM,
+    // Email/password user who has not opened the verification link yet
+    _needsVerify: (u) => !!u && !u.emailVerified
+        && (u.providerData||[]).some(p => p.providerId === 'password')
+        && Date.parse((u.metadata && u.metadata.creationTime) || 0) >= VERIFY_REQUIRED_FROM,
+    // Sends the verification mail (60s cooldown). Return: 'sent' | 'wait' | 'error'
+    _sendVerify: async (user) => {
+        const key = 'ev_last_' + user.uid, left = 60000 - (Date.now() - parseInt(localStorage.getItem(key) || '0'));
+        if(left > 0) return 'wait';
+        try {
+            try { await sendEmailVerification(user, { url: location.origin + location.pathname }); }
+            catch(e){ if(e && e.code === 'auth/unauthorized-continue-uri') await sendEmailVerification(user); else throw e; }
+            localStorage.setItem(key, Date.now().toString()); return 'sent';
+        } catch(e){ return (e && e.code === 'auth/too-many-requests') ? 'wait' : 'error'; }
+    },
     _wait: wait,
 
     showAuth: () => {
         window.auth._reset();
+        if(window.auth._verifyReset) window.auth._verifyReset();
         $('auth-modal-wrapper').classList.add('active');
         setTimeout(() => { const f = document.querySelector('.auth-form:not(.hidden) input'); if(f && window.innerWidth > 700) f.focus(); }, 650);
     },
@@ -88,7 +108,13 @@ window.auth = {
         if(!email || !pass){ window.auth._fail([!email && emailEl, !pass && passEl]); return window.ui.toast('Fill all fields'); }
         window.auth._busy(btn, true, 'Signing in...');
         try {
-            await signInWithEmailAndPassword(authService, email, pass);
+            const cred = await signInWithEmailAndPassword(authService, email, pass);
+            if(window.auth._needsVerify(cred.user)){
+                const r = await window.auth._sendVerify(cred.user);
+                await signOut(authService);
+                window.auth._busy(btn, false); window.auth._fail([emailEl]);
+                return window.ui.notify({ type:'info', title: r === 'sent' ? 'Verification link sent' : 'Verify your email first', message: (r === 'sent' ? 'We have sent a new verification link to your email. ' : 'Please use the verification link we already sent. ') + 'Open it to verify, and also check your Spam / Junk folder.', duration: 9000 });
+            }
             const name = (authService.currentUser && authService.currentUser.displayName) || 'Player';
             await window.auth._done('Welcome back!', 'Logging you in…');
             window.auth.hideAuth(); passEl.value = '';
@@ -104,7 +130,7 @@ window.auth = {
         const btns = document.querySelectorAll('.btn-google');
         const setBusy = (on) => btns.forEach(b => { b.disabled = on; b.classList.toggle('loading', on); });
         const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' }); // hamesha account list dikhao
+        provider.setCustomParameters({ prompt: 'select_account' }); // always show the account list
         setBusy(true);
         try {
             const res = await signInWithPopup(authService, provider);
@@ -120,7 +146,7 @@ window.auth = {
             setBusy(false);
             if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
             window.auth._fail([]);
-            window.ui.toast(c === 'auth/unauthorized-domain' ? 'Is domain ko Firebase Authorized domains me add karo' : friendly(e));
+            window.ui.toast(c === 'auth/unauthorized-domain' ? 'This domain is not authorised for sign-in. Add it under Firebase Authorized domains.' : friendly(e));
         }
         setBusy(false);
     },
@@ -146,33 +172,9 @@ window.auth = {
             setTimeout(() => { box.style.height = ''; box.classList.remove('animating'); next.classList.remove('auth-in-' + dir); }, 460);
         }, 170);
     },
-    forgot: () => {
-        const pref = (document.getElementById('login-email').value||'').trim();
-        const f=document.getElementById('forgot-email'); if(f) f.value=pref;
-        window.ui.openModal('modal-forgot');
-    },
-    sendForgot: async () => {
-        const email=(document.getElementById('forgot-email').value||'').trim();
-        if(!email) return window.ui.toast('Email required');
-        const key='fp_last_'+email.toLowerCase();
-        const last=parseInt(localStorage.getItem(key)||'0');
-        const wait=180000-(Date.now()-last);
-        if(wait>0){
-            const s=Math.ceil(wait/1000);
-            return window.ui.toast(`Please wait ${Math.floor(s/60)}m ${s%60}s before requesting again`);
-        }
-        const btn=document.getElementById('forgot-send-btn'); if(btn){ btn.disabled=true; btn.innerText='Sending...'; }
-        try {
-            await sendPasswordResetEmail(authService, email);
-            localStorage.setItem(key, Date.now().toString());
-            window.ui.toast('Reset link sent to '+email);
-            window.ui.closeModal();
-        } catch(e){ window.ui.toast(e.message); }
-        finally { if(btn){ btn.disabled=false; btn.innerText='Send Reset Link'; } }
-    },
 };
 
-// Redirect fallback se wapas aane par welcome dikhao (auth-state.js baaki sab handle karta hai)
+// Show the welcome message when returning from the redirect fallback (auth-state.js handles everything else)
 getRedirectResult(authService).then(r => {
     if(r && r.user){ setTimeout(() => window.auth._welcome && window.auth._welcome(r.user.displayName || 'Player', 'Google login successful'), 600); }
 }).catch(() => {});
