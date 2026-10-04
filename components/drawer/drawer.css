@@ -1,0 +1,60 @@
+/* Left side drawer (profile, wallet summary, menu) */
+.drawer-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:4000; opacity:0; pointer-events:none; transition:0.3s; backdrop-filter:blur(2px); }
+.drawer { position:fixed; top:0; left:0; width:85%; max-width:320px; height:100%; background:var(--bg-body); transform:translateX(-100%); transition:0.3s cubic-bezier(0.2,0.8,0.2,1); z-index:4001; display:flex; flex-direction:column; overflow-y:auto; }
+.drawer-active .drawer-overlay { opacity:1; pointer-events:all; }
+.drawer-active .drawer { transform:translateX(0); }
+.profile-section { background:var(--bg-card); padding:30px 20px 20px; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.profile-top { display:flex; align-items:center; gap:15px; margin-bottom:15px; }
+#drawer-user .profile-top { align-items:flex-start; margin-top:-34px; position:relative; z-index:2; }
+#drawer-user .p-info { margin-top:40px; min-width:0; flex:1; }
+.p-avatar { width:68px; height:68px; flex:none; border-radius:50%; border:2px solid var(--primary); padding:2px; background:var(--bg-card); position:relative; box-shadow:0 6px 16px rgba(79,70,229,.25); }
+#drawer-user .p-avatar { border:3px solid var(--bg-card); padding:0; box-shadow:0 0 0 2px var(--primary), 0 8px 18px rgba(79,70,229,.3); }
+.p-avatar::before { content:''; position:absolute; inset:-6px; border-radius:50%; border:2px solid var(--primary); opacity:0; pointer-events:none; }
+.drawer-active #drawer-user .p-avatar::before { animation:pf-ring 1.8s ease-out .3s infinite; }
+@keyframes pf-ring { 0%{transform:scale(.85);opacity:.55} 100%{transform:scale(1.25);opacity:0} }
+.p-online { position:absolute; right:1px; bottom:1px; width:14px; height:14px; border-radius:50%; background:var(--success); border:2.5px solid var(--bg-card); }
+.p-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+.p-info h3 { font-size:1.1rem; font-weight:800; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:5px; }
+.p-info p { font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px; }
+.p-edit-btn { position:absolute; top:14px; right:14px; z-index:3; background:rgba(255,255,255,.22); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); color:#fff; border:1px solid rgba(255,255,255,.35); padding:6px 12px; border-radius:20px; font-size:0.72rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:transform .2s var(--ease-out), background .2s; }
+.p-edit-btn:active { transform:scale(.93); }
+.p-edit-btn i { transition:transform .35s var(--ease-spring); }
+.p-edit-btn:hover i { transform:rotate(-18deg) scale(1.15); }
+.p-game-details { background:var(--bg-input); padding:10px; border-radius:10px; display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:15px; }
+.pg-item { display:flex; flex-direction:column; }
+.pg-lbl { font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; }
+.pg-val { font-weight:700; color:var(--text-main); }
+.drawer-wallet { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); padding:15px; border-radius:14px; color:white; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
+.dw-bal h4 { font-size:0.7rem; opacity:0.8; font-weight:500; }
+.dw-bal h2 { font-size:1.4rem; font-weight:800; }
+.dw-btn { background:rgba(255,255,255,0.2); border:none; color:white; padding:6px 12px; border-radius:6px; font-size:0.75rem; font-weight:600; cursor:pointer; }
+.drawer-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
+.ds-box { background:var(--bg-card); padding:10px; border-radius:10px; text-align:center; border:1px solid var(--border); }
+.ds-val { font-weight:800; color:var(--text-main); font-size:1rem; }
+.ds-lbl { font-size:0.65rem; color:var(--text-muted); font-weight:600; }
+.verify-row { display:flex; gap:10px; margin-bottom:20px; }
+.v-badge { flex:1; background:#dcfce7; color:#16a34a; font-size:0.7rem; padding:6px; text-align:center; border-radius:8px; font-weight:700; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; gap:5px; transition:background .3s, color .3s; }
+.v-badge.unverified { background:#fee2e2; color:#ef4444; border-color:#fecaca; }
+.drawer-menu { padding:10px 20px; }
+.dm-group { margin-bottom:20px; }
+.dm-title { font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; margin-bottom:8px; letter-spacing:0.5px; }
+.dm-item { display:flex; align-items:center; gap:15px; padding:12px 10px; color:var(--text-main); font-weight:500; border-radius:10px; transition:0.2s; cursor:pointer; }
+.dm-item:active { background:var(--bg-input); }
+.dm-item i { width:25px; text-align:center; color:var(--text-muted); font-size:1.1rem; }
+.dm-item.danger { color:var(--danger); }
+.dm-item.danger i { color:var(--danger); }
+
+/* Profile header polish */
+.pf-cover { height:84px; margin:-30px -20px 0; background:linear-gradient(135deg,var(--primary),#7c3aed 55%,var(--accent)); background-size:200% 200%; animation:pf-grad 8s ease-in-out infinite; position:relative; overflow:hidden; }
+@keyframes pf-grad { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.pf-orb { position:absolute; border-radius:50%; background:rgba(255,255,255,.16); animation:fx-float 4s ease-in-out infinite; }
+.pf-orb.o1 { width:70px; height:70px; right:-12px; top:-18px; }
+.pf-orb.o2 { width:36px; height:36px; left:42%; bottom:-14px; animation-delay:1.2s; }
+.p-id-chip { display:inline-flex; align-items:center; gap:6px; max-width:100%; border:0; background:var(--bg-input); color:var(--text-muted); font-size:.68rem; font-weight:600; padding:4px 9px; border-radius:20px; cursor:pointer; transition:transform .2s var(--ease-out), background .2s; }
+.p-id-chip b { color:var(--text-main); font-family:monospace; letter-spacing:.5px; }
+.p-id-chip:active { transform:scale(.94); background:var(--primary-light); }
+.v-badge i, .ds-box { transition:transform .3s var(--ease-spring); }
+.ds-box:active { transform:scale(.95); }
+.v-badge.pop { animation:fx-pop .45s var(--ease-spring); }
+body.dark .v-badge { background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.3); color:#34d399; }
+body.dark .v-badge.unverified { background:rgba(239,68,68,.14); border-color:rgba(239,68,68,.3); color:#f87171; }
