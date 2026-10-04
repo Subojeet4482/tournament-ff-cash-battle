@@ -1,0 +1,15 @@
+<!-- 3. WORLD CHAT -->
+<div id="chat-sub-world" class="chat-sub-view hidden">
+    <div class="chat-sub-header">
+        <div class="chat-back" onclick="chat.backToHub()"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="chat-sub-title">World Chat</div>
+        <div class="wc-live"><span class="wc-live-dot"></span>Live</div>
+    </div>
+    <div id="wc-pinned" class="hidden wc-pinned"></div>
+    <div class="chat-sub-body chat-msgs" id="wc-messages"></div>
+    <div class="chat-composer pro" id="wc-composer">
+        <div id="wc-reply-bar" class="cc-reply-bar hidden"><span id="wc-reply-text"></span><i class="fa-solid fa-xmark" onclick="chat.cancelReply('wc')"></i></div>
+        <div class="cc-inputwrap"><button class="cc-btn cc-inline" onclick="chat.toggleEmoji('wc')" title="Emoji"><i class="fa-regular fa-face-smile"></i></button><input type="text" id="wc-input" maxlength="1000" autocomplete="off" placeholder="Message everyone..." onkeydown="if(event.key==='Enter') chat.sendWorld()"></div>
+        <button class="cc-btn cc-send" onclick="chat.sendWorld()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+</div>
