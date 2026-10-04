@@ -4,7 +4,49 @@
 import { updateProfile, doc, setDoc, updateDoc, authService, dbService } from '../../js/core/firebase.js';
 
 Object.assign(window.app, {
-    toggleDarkMode: () => { const isDark=document.body.classList.toggle('dark'); localStorage.setItem('darkMode',isDark); },
+    // Theme switch: new theme spreads like a circle from the toggle button over the whole screen (dark -> light AND light -> dark)
+    toggleDarkMode: (e) => {
+        const app=window.app, body=document.body, root=document.documentElement;
+        if(app._themeBusy) return;
+        const apply=()=>{
+            const d=body.classList.toggle('dark');
+            try{ localStorage.setItem('darkMode',d); }catch(_){}
+            const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=d?'#0b1020':'#f4f6fb';
+            return d;
+        };
+        // origin = centre of the toggle button
+        let x=innerWidth/2, y=innerHeight/2;
+        const src=e && (e.currentTarget||e.target);
+        const btn=src && src.querySelector && (src.querySelector('.theme-track')||src);
+        if(btn){ const r=btn.getBoundingClientRect(); x=r.left+r.width/2; y=r.top+r.height/2; }
+        const radius=Math.hypot(Math.max(x,innerWidth-x), Math.max(y,innerHeight-y))+4;
+        const reduce=window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if(reduce){ apply(); return; }
+        const clip=[`circle(0px at ${x}px ${y}px)`,`circle(${radius}px at ${x}px ${y}px)`];
+        const opts={duration:750,easing:'cubic-bezier(.22,1,.36,1)'};
+        app._themeBusy=true;
+        root.classList.add('theme-switching');
+        const done=()=>{ root.classList.remove('theme-switching'); app._themeBusy=false; };
+        // 1) Modern path: View Transitions API
+        if(document.startViewTransition){
+            try{
+                const vt=document.startViewTransition(()=>{ apply(); });
+                vt.ready.then(()=>{ root.animate({clipPath:clip},{...opts,pseudoElement:'::view-transition-new(root)'}); }).catch(()=>{});
+                vt.finished.then(done,done);
+                return;
+            }catch(_){ /* fall through to fallback */ }
+        }
+        // 2) Fallback (older webviews): a coloured circle expands from the button, theme flips underneath, circle fades out
+        const willBeDark=!body.classList.contains('dark');
+        const ov=document.createElement('div');
+        ov.className='theme-wave '+(willBeDark?'to-dark':'to-light');
+        document.body.appendChild(ov);
+        const a=ov.animate({clipPath:clip},{...opts,duration:600,fill:'forwards'});
+        a.onfinish=()=>{
+            apply();
+            ov.animate({opacity:[1,0]},{duration:280,fill:'forwards'}).onfinish=()=>{ ov.remove(); done(); };
+        };
+    },
     // ===== SOUND (Point 4) =====
     initSound: () => {
         const a=parseInt(localStorage.getItem('vol_app')||'50');
@@ -113,11 +155,11 @@ Object.assign(window.app, {
         window.open(link,'_blank');
     },
     avatarUrl: (d) => (d && d.photoUrl) || ('https://ui-avatars.com/api/?name='+encodeURIComponent((d&&d.appName)||'User')+'&background=4f46e5&color=fff'),
-    // Photo: koi bhi size chalega — center-crop 320x320 + JPEG compress (<~45KB) karke save hota hai
+    // Photo: any size works — it is center-cropped to 320x320, JPEG-compressed (<~45KB) and saved
     handleImageUpload: (input) => {
         const f=input.files&&input.files[0]; if(!f) return;
-        if(!/^image\//.test(f.type)){ input.value=''; return window.ui.toast("Sirf image select karo"); }
-        if(f.size>10*1024*1024){ input.value=''; return window.ui.toast("Image bahut badi hai (max 10MB)"); }
+        if(!/^image\//.test(f.type)){ input.value=''; return window.ui.toast("Please select an image file (JPG or PNG)."); }
+        if(f.size>10*1024*1024){ input.value=''; return window.ui.toast("This image is too large. Please choose one under 10 MB."); }
         const img=new Image(), url=URL.createObjectURL(f);
         img.onload=()=>{
             const S=320, c=document.createElement('canvas'); c.width=c.height=S; const x=c.getContext('2d');
@@ -125,12 +167,12 @@ Object.assign(window.app, {
             x.drawImage(img,sx,sy,m,m,0,0,S,S); URL.revokeObjectURL(url);
             let q=0.85, out=c.toDataURL('image/jpeg',q);
             while(out.length>60000 && q>0.4){ q-=0.1; out=c.toDataURL('image/jpeg',q); }
-            if(out.length>90000){ input.value=''; return window.ui.toast("Image compress nahi hui, dusri try karo"); }
+            if(out.length>90000){ input.value=''; return window.ui.toast("We could not process this image. Please try a different one."); }
             const el=document.getElementById('edit-profile-img'); el.src=out; window.app.tempImage=out;
             const w=el.closest('.ep-avatar'); if(w){ w.classList.remove('swap'); void w.offsetWidth; w.classList.add('swap'); }
             input.value='';
         };
-        img.onerror=()=>{ URL.revokeObjectURL(url); input.value=''; window.ui.toast("Image load nahi hui"); };
+        img.onerror=()=>{ URL.revokeObjectURL(url); input.value=''; window.ui.toast("This image could not be loaded. Please try another one."); };
         img.src=url;
     },
     saveProfile: async () => {
@@ -142,13 +184,13 @@ Object.assign(window.app, {
         const updates={};
         const left=d.nameChangesLeft!==undefined?d.nameChangesLeft:2;
         if(appName && appName!==d.appName){
-            if(left<=0) return window.ui.toast("Name change limit khatam");
-            updates.appName=appName; updates.nameChangesLeft=left-1; // counter sirf ghat sakta hai (rules)
+            if(left<=0) return window.ui.toast("Name change limit reached");
+            updates.appName=appName; updates.nameChangesLeft=left-1; // the counter can only decrease (rules)
         }
         if(gameName && gameName!==d.gameName) updates.gameName=gameName;
         if(gameUid && !d.isUidVerified && gameUid!==String(d.gameUid||'')) updates.gameUid=gameUid;
         if(window.app.tempImage) updates.photoUrl=window.app.tempImage;
-        if(!Object.keys(updates).length){ window.ui.closeModal(); return window.ui.toast("Kuch change nahi hua"); }
+        if(!Object.keys(updates).length){ window.ui.closeModal(); return window.ui.toast("No changes to save."); }
         const btn=document.getElementById('ep-save');
         if(btn){ btn.disabled=true; btn.classList.add('saving'); btn.innerHTML='<i class="fa-solid fa-circle-notch"></i> Saving...'; }
         try {
@@ -156,7 +198,7 @@ Object.assign(window.app, {
             await setDoc(doc(dbService,"users",window.db.user_uid),updates,{merge:true});
             window.app.tempImage=null;
             await window.app.fetchUserData(); window.ui.closeModal(); window.ui.toast("Profile Updated!");
-            // drawer ka naam/photo turant refresh
+            // refresh the drawer name/photo immediately
             const u=window.db.user_data; const pn=document.getElementById('profile-name'); const pi=document.getElementById('profile-img');
             if(pi) pi.src=window.app.avatarUrl(u);
             if(pn && updates.appName){ const sp=pn.querySelector('span'); if(sp) sp.textContent=updates.appName; }
