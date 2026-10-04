@@ -1,0 +1,12 @@
+<!-- DEPOSIT VERIFY OVERLAY -->
+<div id="dep-verify-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center; padding:30px;">
+  <div style="background:#fff; border-radius:24px; padding:32px 26px; width:100%; max-width:340px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div id="dvo-icon" style="width:78px; height:78px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#818cf8); margin:0 auto 18px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem;">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+    <div id="dvo-title" style="font-size:1.15rem; font-weight:800; color:#0f172a; margin-bottom:8px;">Verifying payment...</div>
+    <div id="dvo-sub" style="font-size:0.85rem; color:#64748b; line-height:1.5;">Please wait while we match your UTR with the bank record. Do not close the app.</div>
+    <div id="dvo-timer" style="margin-top:18px; font-size:0.8rem; color:#4f46e5; font-weight:700;">Checking... 10s</div>
+    <button id="dvo-close" onclick="document.getElementById('dep-verify-overlay').style.display='none';" style="display:none; margin-top:18px; background:#4f46e5; color:#fff; border:none; padding:12px 28px; border-radius:50px; font-weight:700; cursor:pointer;">OK</button>
+  </div>
+</div>
