@@ -1,0 +1,82 @@
+/* Join match modal + slot grid */
+.modal-summary { background:var(--bg-input); padding:10px; border-radius:12px; display:flex; justify-content:space-between; margin-bottom:15px; border:1px solid var(--border); font-size:0.8rem; }
+.sum-item { text-align:center; }
+.sum-val { font-weight:700; color:var(--primary); display:block; }
+.sum-lbl { font-size:0.7rem; color:var(--text-muted); }
+.checkbox-group { display:flex; align-items:center; gap:10px; margin:15px 0; font-size:0.85rem; color:var(--text-muted); }
+.balance-status { text-align:right; font-size:0.8rem; margin-top:0; font-weight:700; display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border-radius:30px; background:var(--bg-input); }
+.bal-ok{color:var(--success)}
+.bal-low{color:var(--danger)}
+.bal-ok::before, .bal-low::before { content:''; display:inline-block; width:7px; height:7px; border-radius:50%; background:currentColor; margin-right:3px; animation: fx-pulse-dot 1.4s ease-in-out infinite; }
+
+/* ---- step indicator ---- */
+.join-steps { display:flex; align-items:center; gap:8px; margin:2px 0 14px; }
+.js-step { display:flex; align-items:center; gap:7px; font-size:.74rem; font-weight:700; color:var(--text-muted); transition:color .3s; }
+.js-dot { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-size:.74rem; background:var(--bg-input); border:2px solid var(--border); transition:all .45s cubic-bezier(.34,1.56,.64,1); }
+.join-steps[data-step="1"] .js-step:first-child, .join-steps[data-step="2"] .js-step:last-child { color:var(--primary); }
+.join-steps[data-step="1"] .js-step:first-child .js-dot, .join-steps[data-step="2"] .js-step:last-child .js-dot { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 0 0 5px var(--primary-light); transform:scale(1.08); }
+.join-steps[data-step="2"] .js-step:first-child .js-dot { background:var(--success); border-color:var(--success); color:transparent; font-size:0; position:relative; }
+.join-steps[data-step="2"] .js-step:first-child .js-dot::after { content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900; font-size:.72rem; color:#fff; animation: fx-pop .45s cubic-bezier(.34,1.56,.64,1); }
+.join-steps[data-step="2"] .js-step:first-child { color:var(--success); }
+.js-line { flex:1; height:4px; border-radius:4px; background:var(--border); overflow:hidden; }
+.js-line span { display:block; height:100%; width:0; border-radius:4px; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width .7s cubic-bezier(.22,1,.36,1); }
+.join-steps[data-step="2"] .js-line span { width:100%; }
+
+/* ---- match summary chips ---- */
+.modal-wrap.active .sum-item { animation: fx-pop .55s cubic-bezier(.34,1.56,.64,1) backwards; }
+.modal-wrap.active .sum-item:nth-child(1) { animation-delay:.12s; }
+.modal-wrap.active .sum-item:nth-child(2) { animation-delay:.2s; }
+.modal-wrap.active .sum-item:nth-child(3) { animation-delay:.28s; }
+#modal-join .modal-summary { background:linear-gradient(135deg,var(--bg-input),var(--primary-light)); }
+
+/* ---- inputs ---- */
+#modal-join .input-box { transition:border-color .25s, box-shadow .25s, background .25s, transform .25s; }
+#modal-join .input-box:focus { transform:translateY(-1px); }
+
+/* ---- custom checkbox ---- */
+.checkbox-group input { appearance:none; -webkit-appearance:none; width:22px; height:22px; flex-shrink:0; border-radius:7px; border:2px solid var(--border); background:var(--bg-input); display:grid; place-items:center; cursor:pointer; transition:background .25s, border-color .25s, transform .25s cubic-bezier(.34,1.56,.64,1); }
+.checkbox-group input::after { content:'\f00c'; font-family:'Font Awesome 6 Free'; font-weight:900; font-size:.7rem; color:#fff; transform:scale(0) rotate(-45deg); transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+.checkbox-group input:checked { background:var(--primary); border-color:var(--primary); animation: fx-pop .35s cubic-bezier(.34,1.56,.64,1); }
+.checkbox-group input:checked::after { transform:scale(1) rotate(0); }
+.checkbox-group label { cursor:pointer; }
+
+/* ---- step switch ---- */
+#join-step1.join-out { animation: join-out .25s ease forwards; }
+#join-step2.join-in  { animation: join-in .5s cubic-bezier(.22,1,.36,1) backwards; }
+@keyframes join-out { to{ opacity:0; transform:translateX(-30px) } }
+@keyframes join-in  { from{ opacity:0; transform:translateX(40px) } to{ opacity:1; transform:none } }
+.slot-loading { grid-column:1 / -1; text-align:center; padding:26px; color:var(--text-muted); font-size:.85rem; font-weight:600; }
+
+/* ---- slot grid ---- */
+#slot-grid button { transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, background .2s, border-color .2s; animation: fx-pop .45s cubic-bezier(.34,1.56,.64,1) backwards; }
+#slot-grid button:active { transform:scale(0.92); }
+#slot-grid button.picked { animation: slot-pick .5s cubic-bezier(.34,1.56,.64,1); box-shadow:0 10px 22px rgba(79,70,229,.38); }
+@keyframes slot-pick { 0%{ transform:scale(.9) } 50%{ transform:scale(1.07) } 100%{ transform:scale(1) } }
+#btn-confirm-slot:not(:disabled) { animation: fx-pop .45s cubic-bezier(.34,1.56,.64,1); }
+
+/* ---- success overlay + confetti ---- */
+.join-done { position:absolute; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; padding:20px;
+  background:var(--bg-card); border-radius:24px 24px 0 0; overflow:hidden; opacity:0; visibility:hidden; pointer-events:none; transition:opacity .28s ease, visibility .28s; }
+.join-done.show { opacity:1; visibility:visible; pointer-events:all; }
+.jd-svg { width:104px; height:104px; stroke:var(--success); transform:scale(.6); transition:transform .6s cubic-bezier(.34,1.56,.64,1); filter:drop-shadow(0 10px 18px rgba(16,185,129,.35)); }
+.join-done.show .jd-svg { transform:scale(1); }
+.jd-circle { stroke-dasharray:170; stroke-dashoffset:170; fill:rgba(16,185,129,.08); }
+.jd-check  { stroke-dasharray:50;  stroke-dashoffset:50; }
+.join-done.show .jd-circle { animation: auth-draw .6s ease .1s forwards; }
+.join-done.show .jd-check  { animation: auth-draw .4s ease .55s forwards; }
+.join-done h3 { margin:10px 0 0; font-size:1.35rem; font-weight:800; color:var(--text-main); }
+.join-done p { margin:0; color:var(--text-muted); font-size:.92rem; }
+.join-done.show h3 { animation: fx-fade-up .5s cubic-bezier(.22,1,.36,1) .6s backwards; }
+.join-done.show p  { animation: fx-fade-up .5s cubic-bezier(.22,1,.36,1) .7s backwards; }
+.jd-confetti { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.jd-confetti i { position:absolute; left:50%; top:42%; width:9px; height:13px; border-radius:2px; opacity:0; animation: jd-fall 1.5s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes jd-fall {
+  0%   { opacity:1; transform:translate(0,0) rotate(0); }
+  35%  { opacity:1; transform:translate(var(--dx),var(--dy)) rotate(var(--rot)); }
+  100% { opacity:0; transform:translate(calc(var(--dx) * 1.25),calc(var(--dy) + 380px)) rotate(calc(var(--rot) * 2)); }
+}
+
+/* ---- slot grid: columns never overflow, long text is ellipsised ---- */
+#slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+#slot-grid button { min-width:0; text-align:left; }
+#slot-grid button .slot-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
