@@ -3,7 +3,7 @@
  * Every other module imports what it needs from here.
  */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, sendEmailVerification, deleteUser, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getFirestore, collection, collectionGroup, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, query, orderBy, limit, addDoc, where, deleteDoc, serverTimestamp, onSnapshot, increment, runTransaction, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
@@ -24,7 +24,7 @@ export const storageService = getStorage(appInstance);
 export {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut,
     updateProfile, EmailAuthProvider, reauthenticateWithCredential, sendPasswordResetEmail,
-    GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+    GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, sendEmailVerification, deleteUser, verifyPasswordResetCode, confirmPasswordReset,
     getFirestore, collection, collectionGroup, getDocs, doc, setDoc, getDoc, updateDoc,
     arrayUnion, arrayRemove, query, orderBy, limit, addDoc, where, deleteDoc,
     serverTimestamp, onSnapshot, increment, runTransaction, writeBatch,
