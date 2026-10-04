@@ -58,3 +58,28 @@
 .v-badge.pop { animation:fx-pop .45s var(--ease-spring); }
 body.dark .v-badge { background:rgba(16,185,129,.14); border-color:rgba(16,185,129,.3); color:#34d399; }
 body.dark .v-badge.unverified { background:rgba(239,68,68,.14); border-color:rgba(239,68,68,.3); color:#f87171; }
+
+/* ===== Pull-the-wallet-card-out gesture ===== */
+.drawer-wallet { touch-action:pan-y; cursor:grab; user-select:none; -webkit-user-select:none; position:relative; }
+.drawer-wallet .dw-btn { cursor:pointer; }
+.dw-hint { font-size:.65rem; color:var(--text-muted); text-align:center; margin:-8px 0 14px; display:flex; align-items:center; justify-content:center; gap:6px; opacity:.85; }
+.dw-hint i { animation:dw-nudge 1.8s ease-in-out infinite; }
+@keyframes dw-nudge { 0%,100%{transform:translateX(-3px)} 50%{transform:translateX(5px)} }
+
+/* empty slot left behind while the card is lifted */
+.drawer-wallet.pulled { background:transparent !important; box-shadow:none !important; outline:2px dashed var(--primary); outline-offset:-2px; animation:none !important; }
+.drawer-wallet.pulled > * { opacity:0; }
+.drawer-wallet.pulled::after { display:none; }
+.drawer-wallet.dw-return { animation:fx-pop .5s var(--ease-spring) backwards !important; }
+
+/* the card that follows the finger (lives on <body>, so it can leave the drawer) */
+.dw-clone { position:fixed; z-index:4100; margin:0 !important; touch-action:none; pointer-events:none; will-change:transform;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; border-radius:14px; padding:15px; display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 18px 40px rgba(79,70,229,.45); animation:none !important; transition:box-shadow .2s; }
+.dw-clone.ready { box-shadow:0 22px 50px rgba(79,70,229,.65), 0 0 0 3px rgba(255,255,255,.35); }
+.dw-clone.settling { transition:transform .42s var(--ease-spring); }
+.dw-clone.flying { transition:transform .55s cubic-bezier(.5,0,.9,.4), opacity .5s ease .1s; }
+.dw-clone .dw-bal h4 { font-size:.7rem; opacity:.8; font-weight:500; }
+.dw-clone .dw-bal h2 { font-size:1.4rem; font-weight:800; }
+.dw-clone .dw-btn { background:rgba(255,255,255,.2); border:none; color:#fff; padding:6px 12px; border-radius:6px; font-size:.75rem; font-weight:600; }
+.dw-clone::after { display:none; }
