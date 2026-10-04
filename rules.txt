@@ -1,0 +1,586 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================== HELPERS ==============================
+    function signedIn() { return request.auth != null; }
+
+    // ADMIN: admin.html isi email se login karta hai.
+    // Stronger: email check ki jagah  request.auth.uid == 'YAHAN_ADMIN_UID'
+    function isAdmin() {
+      return signedIn() && request.auth.token.email == 'chandanamandal4482@gmail.com';
+    }
+
+    function isMe(u) { return signedIn() && request.auth.uid == u; }
+
+    function userPath(u)   { return /databases/$(database)/documents/users/$(u); }
+    function depReqPath(u) { return /databases/$(database)/documents/deposit_requests/$(u); }
+    function fampayPath(u) { return /databases/$(database)/documents/fampay_deposits/$(u); }
+    function groupPath(g)  { return /databases/$(database)/documents/groups/$(g); }
+
+    // Total wallet = deposit + withdraw (purane users ke liye `balance` fallback)
+    function totalBal(d) {
+      return d.get('depositBalance', d.get('balance', 0)) + d.get('withdrawBalance', 0);
+    }
+
+    // Permanent ban wale user paisa / join wale kaam nahi kar sakte
+    function notBanned() {
+      let u = get(userPath(request.auth.uid)).data;
+      return !(u.get('isBanned', false) == true && u.get('bannedUntil', 'permanent') == 'permanent');
+    }
+
+    // Chat ban (admin ke Ban user button se): chatBannedUntil = 0 (permanent) ya millis
+    function chatOk() {
+      let u = get(userPath(request.auth.uid)).data;
+      return !(u.get('chatBanned', false) == true &&
+               (u.get('chatBannedUntil', 0) == 0 || u.get('chatBannedUntil', 0) > request.time.toMillis()));
+    }
+
+
+    // ================================ USERS ================================
+    match /users/{userId} {
+
+      // Leaderboard, chat search, profile, playerId lookup — sab ko login chahiye
+      allow read: if signedIn();
+
+      // Register: apna doc, zero balance, koi admin/ban/verify field nahi
+      allow create: if isMe(userId) && validNewUser(request.resource.data);
+
+      allow update: if isMe(userId) && ownerUpdateOk()
+                    || (signedIn() && !isMe(userId) && friendLinkOk());
+
+      // Delete sirf admin (neeche catch-all)
+      allow delete: if false;
+
+      function validNewUser(d) {
+        return d.uid == request.auth.uid
+          && d.keys().hasOnly(['appName','email','phone','balance','depositBalance','withdrawBalance','uid',
+                               'playerId','joined_matches','score','kills','matchesPlayed','matchesWon',
+                               'totalEarned','gameName','gameUid','isUidVerified','photoUrl','nameChangesLeft'])
+          && d.get('depositBalance', 0) == 0 && d.get('withdrawBalance', 0) == 0 && d.get('balance', 0) == 0
+          && d.get('totalEarned', 0) == 0 && d.get('kills', 0) == 0 && d.get('matchesWon', 0) == 0
+          && d.get('score', 0) == 0 && d.get('matchesPlayed', 0) == 0
+          && d.get('isUidVerified', false) == false
+          && d.get('joined_matches', []).size() == 0;
+      }
+
+      // User apne doc mein sirf ye fields badal sakta hai (whitelist).
+      // Locked (sirf admin): isBanned, bannedUntil, isVerified, chatBanned*, playerId, uid, email,
+      // kills, matchesWon, totalEarned, score, totalWithdrawn, isAdmin/role, ...
+      function ownerUpdateOk() {
+        let d = request.resource.data;
+        let o = resource.data;
+        let ch = d.diff(o).affectedKeys();
+        return ch.hasOnly(['appName','name','username','bio','privacy','joinedAt',
+                           'gameName','gameUid','photoUrl','photoURL','coverURL',
+                           'paymentMethod','paymentName','nameChangesLeft','online','lastSeen',
+                           'friends','pinnedFriends','blockList','outgoingReq','muted','pinnedChats','archived',
+                           'joined_matches','matchesPlayed',
+                           'depositBalance','withdrawBalance','totalDeposited','lastDepositUtr'])
+          // FF UID verify hone ke baad badal nahi sakta
+          && (!ch.hasAny(['gameUid']) || o.get('isUidVerified', false) == false)
+          // name change counter sirf ghat sakta hai
+          && (!ch.hasAny(['nameChangesLeft']) || d.nameChangesLeft < o.get('nameChangesLeft', 2))
+          && balancesOk(o, d);
+      }
+
+      // Withdraw balance kabhi badh nahi sakta (sirf admin credit karta hai).
+      // Deposit balance sirf ghat sakta hai, ya verified UPI deposit se badh sakta hai.
+      function balancesOk(o, d) {
+        let wdBefore  = o.get('withdrawBalance', 0);
+        let wdAfter   = d.get('withdrawBalance', wdBefore);
+        let depBefore = o.get('depositBalance', o.get('balance', 0));
+        let depAfter  = d.get('depositBalance', depBefore);
+        return wdAfter <= wdBefore && wdAfter >= 0 && depAfter >= 0
+          && (depAfter <= depBefore || validDepositCredit(o, d, depAfter - depBefore));
+      }
+
+      // UPI auto-verify: fampay_deposits mein payment dikhni chahiye, amount match, aur
+      // usi transaction mein request 'success' + fampay doc delete hona chahiye.
+      function validDepositCredit(o, d, delta) {
+        let utr = d.get('lastDepositUtr', '');
+        let rq = get(depReqPath(utr)).data;
+        let fp = get(fampayPath(utr)).data;
+        return utr is string && utr != '' && utr != o.get('lastDepositUtr', '')
+          && rq.uid == request.auth.uid
+          && rq.status in ['pending', 'processing']
+          && getAfter(depReqPath(utr)).data.status == 'success'
+          && !existsAfter(fampayPath(utr))
+          && math.abs(float(fp.amount) - delta) < 0.01
+          && math.abs(float(rq.amount) - delta) < 0.01
+          && math.abs((d.get('totalDeposited', 0) - o.get('totalDeposited', 0)) - delta) < 0.01;
+      }
+
+      // Dusre user ke doc mein sirf friends / outgoingReq mein APNA uid add-remove (friend accept/remove/block)
+      function friendLinkOk() {
+        let d = request.resource.data;
+        let o = resource.data;
+        let me = request.auth.uid;
+        return d.diff(o).affectedKeys().hasOnly(['friends', 'outgoingReq'])
+          && d.get('friends', []).toSet().difference(o.get('friends', []).toSet()).hasOnly([me])
+          && o.get('friends', []).toSet().difference(d.get('friends', []).toSet()).hasOnly([me])
+          && o.get('outgoingReq', []).toSet().difference(d.get('outgoingReq', []).toSet()).hasOnly([me])
+          && d.get('outgoingReq', []).toSet().difference(o.get('outgoingReq', []).toSet()).size() == 0;
+      }
+
+      // ---------------------- users/{uid}/transactions ----------------------
+      match /transactions/{trxId} {
+        allow read: if isMe(userId);
+
+        allow create: if isMe(userId) && validTrxCreate(userId, request.resource.data);
+
+        // Sirf auto-verify wali UPI deposit entry (pending -> success/failed)
+        allow update: if isMe(userId) && validDepositTrxUpdate();
+
+        // Pending entry user delete nahi kar sakta (admin ko dikhni chahiye)
+        allow delete: if isMe(userId) && resource.data.status != 'pending';
+
+        function validTrxCreate(uid, t) {
+          return (t.type == 'game' && t.status == 'success')
+              || (t.type == 'deposit' && t.status == 'pending' && t.get('method', '') in ['UPI', 'CRYPTO'])
+              || (t.type == 'withdraw' && t.status == 'pending' && validWithdraw(uid, t));
+        }
+
+        // Withdraw request tabhi banegi jab usi batch mein withdrawBalance utna ghata ho
+        function validWithdraw(uid, t) {
+          let amt = float(t.amount.split('₹')[1]);
+          let before = get(userPath(uid)).data.get('withdrawBalance', 0);
+          let after = getAfter(userPath(uid)).data.get('withdrawBalance', 0);
+          return notBanned() && amt >= 20 && (before - after) >= (amt - 0.01);
+        }
+
+        function validDepositTrxUpdate() {
+          let o = resource.data;
+          let d = request.resource.data;
+          return o.type == 'deposit' && o.get('method', '') == 'UPI' && o.status == 'pending'
+            && d.diff(o).affectedKeys().hasOnly(['status', 'title'])
+            && d.status in ['success', 'failed']
+            && (d.status == 'failed' || get(depReqPath(o.get('trxId', 'x'))).data.status == 'success');
+        }
+      }
+
+      // --------------------- users/{uid}/notifications ----------------------
+      match /notifications/{nid} {
+        allow read: if isMe(userId);
+        // app khud sirf deposit-status notification banata hai (claim/cash wali nahi)
+        allow create: if isMe(userId)
+          && request.resource.data.keys().hasOnly(['title','body','message','type','read','date','createdAt','timestamp']);
+        // claimCash / read mark
+        allow update: if isMe(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed','claimedAt','read']);
+        allow delete: if isMe(userId);
+      }
+
+      // ---------------------- users/{uid}/matchHistory ----------------------
+      match /matchHistory/{hid} {
+        allow read: if isMe(userId);
+      }
+    }
+
+
+    // =============================== MATCHES ===============================
+    match /matches/{matchId} {
+      allow read: if true;                        // guest bhi match list dekh sakta hai
+      allow create, delete: if false;             // sirf admin (catch-all)
+
+      allow update: if signedIn() && (joinOk(matchId) || slotOk(matchId));
+
+      // JOIN: joined +1, participants mein sirf apna entry (last), aur usi batch mein wallet se fee kati ho
+      function joinOk(mid) {
+        let d = request.resource.data;
+        let o = resource.data;
+        let me = request.auth.uid;
+        let np = o.get('participants', []).size();
+        let ub = get(userPath(me)).data;
+        let ua = getAfter(userPath(me)).data;
+        return d.diff(o).affectedKeys().hasOnly(['joined', 'participants'])
+          && d.joined == o.get('joined', 0) + 1
+          && d.joined <= o.get('total', 48)
+          && d.participants.size() == np + 1
+          && d.participants[np].uid == me
+          && ua.get('joined_matches', []).hasAll([mid])
+          && !ub.get('joined_matches', []).hasAny([mid])
+          && (totalBal(ub) - totalBal(ua)) >= (float(o.get('fee', 0)) - 0.01)
+          && notBanned();
+      }
+
+      // SLOT CONFIRM: sirf join kiya hua user, naya slot pehle se taken nahi
+      function slotOk(mid) {
+        let d = request.resource.data;
+        let o = resource.data;
+        let nt = o.get('takenSlots', []).size();
+        return d.diff(o).affectedKeys().hasOnly(['participants', 'takenSlots'])
+          && d.takenSlots.size() == nt + 1
+          && !(d.takenSlots[nt] in o.get('takenSlots', []))
+          && d.participants.size() == o.get('participants', []).size()
+          && get(userPath(request.auth.uid)).data.get('joined_matches', []).hasAll([mid]);
+      }
+    }
+
+
+    // ======================= PUBLIC CONFIG / CONTENT =======================
+    match /categories/{id} {
+      allow read: if true;
+    }
+
+    // Global broadcast notifications (admin bhejta hai) — init() guest ke liye bhi padhta hai
+    match /notifications/{id} {
+      allow read: if true;
+    }
+
+    match /config/{docId} {
+      // banner = logo, banners, notice, support, UPI, QR, crypto, WhatsApp, Telegram
+      allow read: if docId == 'banner'
+                  || (signedIn() && docId in ['chat_words', 'chat_settings', 'chat_banner']);
+    }
+
+
+    // ============================== PAYMENTS ===============================
+    // User ki UPI deposit request (doc id = UTR)
+    match /deposit_requests/{utr} {
+      // transaction.get() missing doc par bhi chalna chahiye (resource == null)
+      allow get: if signedIn() && (resource == null || resource.data.uid == request.auth.uid);
+      allow list: if signedIn() && resource.data.uid == request.auth.uid;
+
+      allow create: if signedIn() && notBanned()
+        && request.resource.data.keys().hasOnly(['utr','amount','uid','name','status','createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.utr == utr
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0 && request.resource.data.amount <= 100000;
+
+      allow update: if signedIn() && resource.data.uid == request.auth.uid && reqUpdateOk(utr);
+      allow delete: if false;
+
+      function reqUpdateOk(u) {
+        let o = resource.data;
+        let d = request.resource.data;
+        let ch = d.diff(o).affectedKeys();
+        return ch.hasOnly(['status','trxDocId','failedAt','verifiedAt','receivedAmount','claimed'])
+          && (!ch.hasAny(['status'])
+              || (o.status in ['pending','processing'] && d.status in ['processing','failed'])
+              || (o.status in ['pending','processing'] && d.status == 'success' && fampayConsumed(u, d)));
+      }
+
+      // 'success' tabhi jab fampay payment exist kare, isi transaction mein delete ho, aur amount match kare
+      function fampayConsumed(u, d) {
+        return exists(fampayPath(u)) && !existsAfter(fampayPath(u))
+          && math.abs(float(get(fampayPath(u)).data.amount) - float(d.receivedAmount)) < 0.01;
+      }
+    }
+
+    // Bank/UPI payment ki entry — sirf aapka server likhta hai (Admin SDK).
+    // Client sirf apni request ke liye read + success ke time delete kar sakta hai.
+    match /fampay_deposits/{utr} {
+      allow get: if signedIn() && exists(depReqPath(utr))
+                 && get(depReqPath(utr)).data.uid == request.auth.uid;
+      allow delete: if signedIn() && get(depReqPath(utr)).data.uid == request.auth.uid
+                    && getAfter(depReqPath(utr)).data.status == 'success';
+      allow list, create, update: if false;
+    }
+
+
+    // ================================ CHAT =================================
+    // presence/{uid}: heartbeat
+    match /presence/{pid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(pid)
+        && request.resource.data.keys().hasOnly(['state', 'lastSeen', 'ua']);
+      allow delete: if isMe(pid);
+    }
+
+    match /friend_requests/{reqId} {
+      allow read: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'status', 'createdAt'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+        && request.resource.data.status == 'pending';
+      // sirf receiver accept/reject kar sakta hai
+      allow update: if signedIn() && resource.data.to == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
+        && request.resource.data.status in ['accepted', 'rejected'];
+      allow delete: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+    }
+
+    // DM: doc id = "uidA__uidB" (sorted) — membership id se hi pata chal jaata hai
+    match /chats/{cid} {
+      allow read: if signedIn() && request.auth.uid in cid.split('__');
+      allow create, update: if signedIn() && request.auth.uid in cid.split('__')
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members.hasOnly(cid.split('__'));
+      allow delete: if false;
+
+      match /messages/{mid} {
+        allow read: if signedIn() && request.auth.uid in cid.split('__');
+        allow create: if signedIn() && request.auth.uid in cid.split('__')
+          && request.resource.data.uid == request.auth.uid && chatOk();
+        // edit/delete sirf apna message; reaction koi bhi member
+        allow update: if signedIn() && request.auth.uid in cid.split('__')
+          && ((resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid)
+              || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']));
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+    }
+
+    match /groups/{gid} {
+      function g() { return get(groupPath(gid)).data; }
+      function isMember() { return request.auth.uid in g().get('members', []); }
+      function isStaff() { return request.auth.uid == g().get('ownerUid', '') || request.auth.uid in g().get('admins', []); }
+
+      // get: invite link (?joinGroup=id) ke liye; list: sirf public ya apne groups
+      allow get: if signedIn();
+      allow list: if signedIn() && (resource.data.public == true || request.auth.uid in resource.data.members);
+
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.members.size() == 1
+        && request.resource.data.members.hasOnly([request.auth.uid])
+        && request.resource.data.get('admins', []).size() == 0
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 60;
+
+      allow update: if signedIn() && (staffUpdate() || selfJoin() || selfLeave() || nowPlaying());
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      function staffUpdate() {
+        return isStaff() && request.resource.data.ownerUid == resource.data.ownerUid;
+      }
+      function selfJoin() {
+        let d = request.resource.data;
+        let o = resource.data;
+        return d.diff(o).affectedKeys().hasOnly(['members', 'memberCount'])
+          && d.members.toSet().difference(o.members.toSet()).hasOnly([request.auth.uid])
+          && o.members.toSet().difference(d.members.toSet()).size() == 0;
+      }
+      function selfLeave() {
+        let d = request.resource.data;
+        let o = resource.data;
+        let me = request.auth.uid;
+        return d.diff(o).affectedKeys().hasOnly(['members', 'admins', 'memberCount'])
+          && o.members.toSet().difference(d.members.toSet()).hasOnly([me])
+          && d.members.toSet().difference(o.members.toSet()).size() == 0
+          && o.get('admins', []).toSet().difference(d.get('admins', []).toSet()).hasOnly([me])
+          && d.get('admins', []).toSet().difference(o.get('admins', []).toSet()).size() == 0;
+      }
+      function nowPlaying() {
+        return isMember()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nowPlaying'])
+          && request.resource.data.nowPlaying.byUid == request.auth.uid;
+      }
+
+      match /messages/{mid} {
+        allow read: if signedIn() && (g().get('public', false) == true || isMember());
+        allow create: if signedIn() && isMember() && request.resource.data.uid == request.auth.uid && chatOk();
+        allow update: if signedIn() && isMember()
+          && ((resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid)
+              || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+              || (isStaff() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned', 'deleted', 'text'])));
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+      }
+    }
+
+    match /world_messages/{mid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && chatOk()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.type == 'text'
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000;
+      allow update: if signedIn()
+        && ((resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid)
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']));
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Reports: user bana sakta hai, padh/resolve sirf admin
+    match /reports/{rid} {
+      allow create: if signedIn()
+        && request.resource.data.reporter == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.type in ['user', 'message'];
+    }
+
+
+    // =============================== ADMIN ================================
+    // admin.html: users (+ subcollections), matches, categories, notifications, config/*,
+    // deposit_requests, world_messages, groups, reports, leaderboard, backup/restore (sab collections).
+    // collectionGroup('transactions') aur collectionGroup('messages') bhi admin ke liye khule hain.
+    match /{path=**}/transactions/{id} {
+      allow read: if isAdmin();
+    }
+    match /{path=**}/messages/{id} {
+      allow read: if isAdmin();
+    }
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
+
+################################################################################
+#                           STORAGE RULES  (copy from here)
+#   (Storage -> Rules tab. Chat media + profile/cover photos ke liye.)
+################################################################################
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.email == 'chandanamandal4482@gmail.com'; }
+    // File ka naam hamesha  <uid>_<time>_<name>  hota hai (code ke hisaab se)
+    function mine(file) { return file.matches(request.auth.uid + '_.*'); }
+
+    // Profile + cover: image, max ~600 KB (app 500 KB tak compress karta hai)
+    match /profile/{file} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && mine(file)
+        && request.resource.size < 600 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /cover/{file} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && mine(file)
+        && request.resource.size < 600 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+
+    // Chat media (max 20 MB, app ki limit ke barabar)
+    match /chat_images/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file)
+        && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /chat_videos/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file)
+        && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType.matches('video/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /voice_notes/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file)
+        && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType.matches('audio/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /documents/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file) && request.resource.size < 20 * 1024 * 1024;
+      allow delete: if signedIn() && mine(file);
+    }
+
+    // Admin kuch bhi (cleanup / manual upload)
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
+k();
+        allow update: if signedIn() && isMember()
+          && ((resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid)
+              || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+              || (isStaff() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned', 'deleted', 'text'])));
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+      }
+    }
+
+    match /world_messages/{mid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && chatOk()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.type == 'text'
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000;
+      allow update: if signedIn()
+        && ((resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid)
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']));
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Reports: user bana sakta hai, padh/resolve sirf admin
+    match /reports/{rid} {
+      allow create: if signedIn()
+        && request.resource.data.reporter == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.type in ['user', 'message'];
+    }
+
+
+    // =============================== ADMIN ================================
+    // admin.html: users (+ subcollections), matches, categories, notifications, config/*,
+    // deposit_requests, world_messages, groups, reports, leaderboard, backup/restore (sab collections).
+    // collectionGroup('transactions') aur collectionGroup('messages') bhi admin ke liye khule hain.
+    match /{path=**}/transactions/{id} {
+      allow read: if isAdmin();
+    }
+    match /{path=**}/messages/{id} {
+      allow read: if isAdmin();
+    }
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
+
+################################################################################
+#                           STORAGE RULES  (copy from here)
+#   (Storage -> Rules tab. Chat media + profile/cover photos ke liye.)
+################################################################################
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.email == 'chandanamandal4482@gmail.com'; }
+    // File ka naam hamesha  <uid>_<time>_<name>  hota hai (code ke hisaab se)
+    function mine(file) { return file.matches(request.auth.uid + '_.*'); }
+
+    // Profile + cover: image, max ~600 KB (app 500 KB tak compress karta hai)
+    match /profile/{file} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && mine(file)
+        && request.resource.size < 600 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /cover/{file} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && mine(file)
+        && request.resource.size < 600 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+
+    // Chat media (max 20 MB, app ki limit ke barabar)
+    match /chat_images/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file)
+        && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /chat_videos/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file)
+        && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType.matches('video/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /voice_notes/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file)
+        && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType.matches('audio/.*');
+      allow delete: if signedIn() && mine(file);
+    }
+    match /documents/{file} {
+      allow read: if signedIn();
+      allow create: if signedIn() && mine(file) && request.resource.size < 20 * 1024 * 1024;
+      allow delete: if signedIn() && mine(file);
+    }
+
+    // Admin kuch bhi (cleanup / manual upload)
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
