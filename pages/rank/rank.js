@@ -6,7 +6,7 @@ import { collection, onSnapshot, dbService } from '../../js/core/firebase.js';
 Object.assign(window.app, {
     _lbUnsub: null,
     fetchLeaderboard: async () => {
-        // Realtime: live user balances ke top 20 dikhao
+        // Realtime: show the top 20 live user balances
         try {
             if(window.app._lbUnsub){ try{ window.app._lbUnsub(); }catch(e){} window.app._lbUnsub=null; }
             window.app._lbUnsub = onSnapshot(collection(dbService,"users"), (snap)=>{
