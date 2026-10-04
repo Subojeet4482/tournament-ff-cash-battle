@@ -1,0 +1,30 @@
+<!-- LOGOUT CONFIRM -->
+<div id="modal-logout" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet lo-sheet">
+        <div class="sheet-handle"></div>
+        <div class="lo-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
+        <h2 class="lo-title">Logout?</h2>
+        <p class="lo-text">Aapka account aur balance safe rahega. Kabhi bhi wapas login kar sakte ho.</p>
+        <div class="lo-actions">
+            <button class="btn-main lo-stay" onclick="ui.closeModal()">Stay</button>
+            <button class="btn-main lo-go" onclick="auth.confirmLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </div>
+</div>
+
+<!-- LOGOUT / SESSION OVERLAY -->
+<div id="session-overlay">
+    <div class="so-orb so-orb1"></div><div class="so-orb so-orb2"></div>
+    <div class="so-box">
+        <div class="so-ring"><div class="so-ring-in"><i class="fa-solid fa-right-from-bracket" id="so-icon"></i></div></div>
+        <h3 id="so-title">Logging out…</h3>
+        <p id="so-sub">Securing your session</p>
+    </div>
+</div>
+
+<!-- WELCOME CHIP -->
+<div id="welcome-chip">
+    <span class="wc-emoji">👋</span>
+    <div><div class="wc-title" id="wc-title">Welcome back!</div><div class="wc-sub" id="wc-sub"></div></div>
+</div>
