@@ -1,0 +1,9 @@
+/* Transaction list items (used by Wallet + History modal) */
+.trx-item { display:flex; align-items:center; justify-content:space-between; padding:15px; background:var(--bg-card); border-radius:16px; margin-bottom:12px; border:1px solid var(--border); }
+.trx-icon-box { width:45px; height:45px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; margin-right:15px; }
+.icon-deposit{background:#dcfce7;color:#16a34a}
+.icon-withdraw{background:#fee2e2;color:#dc2626}
+.icon-game{background:#e0e7ff;color:#4f46e5}
+.trx-status { font-size:0.65rem; padding:2px 8px; border-radius:4px; font-weight:700; text-transform:uppercase; }
+.status-success{background:#dcfce7;color:#16a34a}
+.status-pending{background:#fef3c7;color:#d97706}
