@@ -1,0 +1,39 @@
+
+<!-- EDIT PROFILE -->
+<div id="modal-edit-profile" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet ep-sheet">
+        <div class="sheet-handle"></div>
+        <div class="ep-head">
+            <h2>Edit Profile</h2>
+            <button type="button" class="ep-x" onclick="ui.closeModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="ep-top">
+            <div class="ep-avatar" onclick="document.getElementById('file-upload').click()">
+                <span class="ep-ring"></span>
+                <img src="" id="edit-profile-img" alt="Profile photo" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff'">
+                <span class="ep-cam"><i class="fa-solid fa-camera"></i></span>
+            </div>
+            <div class="ep-hint">Tap to change photo <span>(auto-resize)</span></div>
+            <input type="file" id="file-upload" accept="image/*" hidden onchange="app.handleImageUpload(this)">
+            <button type="button" class="ep-pid" onclick="ui.copy(document.getElementById('edit-player-id').innerText)"><i class="fa-regular fa-id-badge"></i> Player ID <b id="edit-player-id">--</b> <i class="fa-regular fa-copy"></i></button>
+        </div>
+        <div class="ep-card">
+            <label class="ep-lbl" for="edit-app-name">App Username</label>
+            <div class="ep-field">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="edit-app-name" class="input-box" placeholder="Display Name" maxlength="24" autocomplete="off" oninput="document.getElementById('ep-name-count').innerText=this.value.length+'/24'">
+                <span class="ep-count" id="ep-name-count">0/24</span>
+            </div>
+            <div class="ep-sub"><i class="fa-regular fa-clock"></i> Changes left: <b id="changes-left-count">2</b></div>
+        </div>
+        <div class="ep-card">
+            <h4 class="ep-title"><i class="fa-solid fa-gamepad"></i> Game Information</h4>
+            <label class="ep-lbl" for="edit-game-name">In-Game Name *</label>
+            <div class="ep-field"><i class="fa-solid fa-signature"></i><input type="text" id="edit-game-name" class="input-box" placeholder="Exact FF Name" autocomplete="off"></div>
+            <label class="ep-lbl" for="edit-game-uid">Game UID <span id="uid-status-icon"></span></label>
+            <div class="ep-field"><i class="fa-solid fa-hashtag"></i><input type="number" id="edit-game-uid" class="input-box" placeholder="FF UID (6-12 digits)" inputmode="numeric"></div>
+        </div>
+        <button class="btn-main" id="ep-save" onclick="app.saveProfile()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+    </div>
+</div>
