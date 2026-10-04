@@ -1,0 +1,34 @@
+<!-- 4b. PRIVATE THREAD (dynamic) -->
+<div id="chat-sub-thread" class="chat-sub-view hidden">
+    <div class="chat-sub-header">
+        <div class="chat-back" onclick="chat.closeThread()"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="th-peer" id="th-peer" onclick="chat.openContactProfile()">
+            <div class="msg-avatar" id="th-avatar">?<span class="th-online-dot"></span></div>
+            <div class="th-peer-txt">
+                <div class="th-name-lbl" id="th-name">Chat</div>
+                <div class="th-status-lbl" id="th-status">offline</div>
+            </div>
+        </div>
+        <div class="th-hdr-actions">
+            <button class="th-hdr-btn" id="th-btn-voice" onclick="event.stopPropagation();chat.startCall('voice')" title="Voice call"><i class="fa-solid fa-phone"></i></button>
+            <button class="th-hdr-btn" id="th-btn-video" onclick="event.stopPropagation();chat.startCall('video')" title="Video call"><i class="fa-solid fa-video"></i></button>
+            <button class="th-hdr-btn" onclick="event.stopPropagation();chat.threadMenu()" title="More"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        </div>
+    </div>
+    <div class="chat-sub-body chat-msgs" id="th-messages"></div>
+    <div class="chat-composer pro">
+        <div id="th-reply-bar" class="cc-reply-bar hidden"><span id="th-reply-text"></span><i class="fa-solid fa-xmark" onclick="chat.cancelReply('th')"></i></div>
+        <div class="cc-inputwrap">
+            <button class="cc-btn cc-inline" onclick="chat.toggleEmoji('th')" title="Emoji"><i class="fa-regular fa-face-smile"></i></button>
+            <input type="text" id="th-input" placeholder="Message..." onkeydown="if(event.key==='Enter') chat.sendThread(); else chat.typing()">
+            <label class="cc-btn cc-inline" title="Attach"><i class="fa-solid fa-paperclip"></i>
+                <input type="file" id="th-file" style="display:none" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onchange="chat.sendFile('thread', this.files[0])">
+            </label>
+            <label class="cc-btn cc-inline" title="Camera"><i class="fa-solid fa-camera"></i>
+                <input type="file" id="th-cam" style="display:none" accept="image/*" capture="environment" onchange="chat.sendFile('thread', this.files[0])">
+            </label>
+        </div>
+        <button class="cc-btn" id="th-mic-btn" onclick="chat.recordVoice()" title="Voice message"><i class="fa-solid fa-microphone"></i></button>
+        <button class="cc-btn cc-send" onclick="chat.sendThread()" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+</div>
