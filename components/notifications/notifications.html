@@ -1,0 +1,16 @@
+<!-- NOTIFICATIONS -->
+<div id="modal-notifications" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+            <h2 style="margin:0; font-size:1.5rem;">Notifications</h2>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div onclick="app.clearNotifications()" style="font-size:0.78rem; font-weight:700; color:var(--danger); cursor:pointer;"><i class="fa-solid fa-trash"></i> Clear</div>
+                <div onclick="ui.closeModal()" style="width:35px; height:35px; background:var(--bg-input); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+            </div>
+        </div>
+        <div id="notif-list-container" style="padding-bottom:20px;"></div>
+
+    </div>
+</div>
