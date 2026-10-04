@@ -1,0 +1,15 @@
+<!-- FORGOT PASSWORD MODAL -->
+<div id="modal-forgot" class="modal-wrap" style="z-index:10001;">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet fp-card">
+        <div class="fp-icon"><i class="fa-solid fa-key"></i></div>
+        <h2 style="margin:0 0 6px; font-size:1.3rem; font-weight:800;">Reset Password</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:18px; line-height:1.5;">Enter your registered email. We'll send you a secure reset link.</p>
+        <div class="input-group" style="margin-bottom:14px;">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="forgot-email" class="input-box" placeholder="Your email address" style="padding-left:45px;">
+        </div>
+        <button class="btn-main" id="forgot-send-btn" onclick="auth.sendForgot()" style="padding:12px; border-radius:50px;">Send Reset Link</button>
+        <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted);">You can request again every 3 minutes</div>
+    </div>
+</div>
