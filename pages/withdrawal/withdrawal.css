@@ -1,0 +1,49 @@
+/* Withdrawal modal + success tick */
+.wd-method-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+.wd-method-card { background:var(--bg-card); border:2px solid var(--border); border-radius:16px; padding:16px; text-align:center; cursor:pointer; transition:0.2s; }
+.wd-method-card.selected { border-color:var(--primary); background:var(--primary-light); }
+.wd-method-card .wd-m-icon { font-size:1.8rem; margin-bottom:8px; }
+.wd-method-card .wd-m-name { font-weight:700; font-size:0.9rem; color:var(--text-main); }
+.wd-method-card .wd-m-sub { font-size:0.7rem; color:var(--text-muted); margin-top:2px; }
+.wd-balance-box { background:var(--bg-input); padding:12px; border-radius:10px; text-align:center; margin-bottom:15px; border:1px solid #bae6fd; }
+.wd-info-box { background:var(--bg-input); border-radius:12px; padding:14px; margin-bottom:15px; border:1px solid var(--border); }
+.wd-info-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.82rem; }
+.wd-info-row:last-child { border-bottom:none; }
+.wd-info-row .wd-info-label { color:var(--text-muted); }
+.wd-info-row .wd-info-val { font-weight:700; color:var(--text-main); }
+.wd-info-row .wd-info-val.green { color:var(--success); }
+.wd-info-row .wd-info-val.orange { color:var(--warning); }
+.wd-info-row .wd-info-val.red { color:var(--danger); }
+.wd-section { display:none; }
+.wd-section.active { display:block; }
+.crypto-network-wrap { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px; }
+.crypto-network-chip { padding:8px 14px; border-radius:30px; border:1.5px solid var(--border); font-size:0.8rem; font-weight:700; cursor:pointer; background:var(--bg-card); color:var(--text-muted); transition:0.2s; }
+.crypto-network-chip.selected { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+.wd-tick-wrap { display:flex; justify-content:center; }
+.wd-tick {
+    width:84px; height:84px; border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:2.4rem; box-shadow:0 10px 24px rgba(16,185,129,0.35);
+    animation: tick-pop 0.45s cubic-bezier(.2,1.4,.4,1);
+}
+@keyframes tick-pop { 0%{transform:scale(0)} 70%{transform:scale(1.12)} 100%{transform:scale(1)} }
+
+/* ---- Withdrawal form fields (labels, icons, spacing, validation) ---- */
+.wd-field { margin-bottom:14px; }
+.wd-label { display:block; font-size:0.72rem; font-weight:700; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.4px; }
+.wd-input { position:relative; }
+.wd-input > i { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.95rem; pointer-events:none; transition:color .2s; }
+.wd-input .wd-rupee { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-weight:800; color:var(--text-muted); pointer-events:none; transition:color .2s; }
+.wd-input:focus-within > i, .wd-input:focus-within .wd-rupee { color:var(--primary); }
+.wd-input .input-box { padding-left:44px; }
+.wd-input .wd-count { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:0.68rem; font-weight:700; color:var(--text-muted); pointer-events:none; }
+.wd-input .wd-count + * { }
+.wd-input .input-box[inputmode="numeric"], .wd-input .wd-upper { padding-right:52px; letter-spacing:0.6px; font-variant-numeric:tabular-nums; }
+.wd-upper { text-transform:uppercase; }
+.wd-input .input-box.valid { border-color:var(--success); }
+.wd-input .input-box.invalid { border-color:var(--danger); }
+.wd-hint { font-size:0.7rem; color:var(--text-muted); margin-top:5px; min-height:14px; transition:color .2s; }
+.wd-hint.ok { color:var(--success); }
+.wd-hint.err { color:var(--danger); }
+.wd-net { text-align:right; font-size:0.82rem; font-weight:700; color:var(--success); margin:-4px 0 14px; }
