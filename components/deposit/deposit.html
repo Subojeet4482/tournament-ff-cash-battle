@@ -1,0 +1,47 @@
+<!-- DEPOSIT -->
+<div id="modal-deposit" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0">Add Money</h2>
+            <div onclick="ui.closeModal()" style="font-size:1.5rem; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <div class="dep-tabs">
+            <div class="dep-tab active" id="dep-tab-upi" onclick="app.switchDepositTab('upi')"><i class="fa-solid fa-qrcode"></i> UPI / QR</div>
+            <div class="dep-tab" id="dep-tab-crypto" onclick="app.switchDepositTab('crypto')"><i class="fa-brands fa-bitcoin"></i> Crypto</div>
+        </div>
+        <div id="dep-upi-section">
+            <div id="dep-qr-wrap" style="text-align:center; margin-bottom:15px; display:none;">
+                <img id="dep-qr-img" src="" style="width:160px; height:160px; object-fit:contain; border-radius:12px; border:2px solid var(--border);">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">Scan to Pay</div>
+            </div>
+            <p class="text-muted" style="font-size:0.8rem; margin-bottom:12px;"><i class="fa-solid fa-circle-info"></i> Send money via UPI. Enter UTR number after payment.</p>
+            <div class="pay-copy-box">
+                <div>
+                    <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">UPI ID</div>
+                    <div class="pay-num" id="dep-upi-id">Loading...</div>
+                </div>
+                <div class="copy-btn" onclick="ui.copy(document.getElementById('dep-upi-id').innerText)"><i class="fa-regular fa-copy"></i> Copy</div>
+            </div>
+            <input type="number" id="dep-amount" class="input-box" placeholder="Amount Sent (Min ₹5)" min="5" oninput="app.validateAmount(this)">
+            <input type="text" id="dep-utr" class="input-box" placeholder="UTR / Transaction ID (Required)" style="margin-top:5px;">
+            <div id="dep-auto-status" style="display:none; margin-top:10px; padding:10px 12px; border-radius:10px; background:#f1f5f9; font-size:0.82rem; color:var(--text-muted);"></div>
+            <button class="btn-main" onclick="app.deposit('upi')" style="margin-top:15px;">Verify & Submit</button>
+        </div>
+        <div id="dep-crypto-section" style="display:none;">
+            <div style="background:linear-gradient(135deg,#fef3c7,#fffbeb); padding:15px; border-radius:12px; border:1px solid #fcd34d; margin-bottom:15px;">
+                <div style="font-size:0.7rem; color:#92400e; text-transform:uppercase; font-weight:700; margin-bottom:4px;">Coin</div>
+                <div id="dep-crypto-coin" style="font-weight:900; font-size:1.2rem; color:#78350f; margin-bottom:12px;">USDT (TRC20)</div>
+                <div style="font-size:0.7rem; color:#92400e; text-transform:uppercase; font-weight:700; margin-bottom:6px;">Wallet Address</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <div id="dep-crypto-addr" class="crypto-addr-box" style="flex:1; background:rgba(255,255,255,0.6); border-color:#fcd34d;">Loading...</div>
+                    <div class="copy-btn" onclick="ui.copy(document.getElementById('dep-crypto-addr').innerText)"><i class="fa-regular fa-copy"></i></div>
+                </div>
+            </div>
+            <input type="number" id="dep-crypto-amount" class="input-box" placeholder="Amount (₹ equivalent)" oninput="app.validateAmount(this)">
+            <input type="text" id="dep-crypto-hash" class="input-box" placeholder="Transaction Hash (Required)" style="margin-top:5px;">
+            <button class="btn-main" onclick="app.deposit('crypto')" style="margin-top:15px;">Submit</button>
+        </div>
+    </div>
+</div>
