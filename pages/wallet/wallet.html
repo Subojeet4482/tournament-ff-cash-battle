@@ -1,0 +1,61 @@
+<!-- WALLET -->
+<div id="page-wallet" class="page-section hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px 0;">
+        <h3 style="margin:0; font-weight:800;">My Wallet</h3>
+        <div onclick="app.openWalletHistory()" style="background:var(--bg-card); border:1px solid var(--border); padding:8px 14px; border-radius:30px; font-size:0.78rem; font-weight:700; color:var(--primary); cursor:pointer;">
+            <i class="fa-solid fa-clock-rotate-left"></i> History
+        </div>
+    </div>
+    <div class="credit-card" style="margin-top:10px;">
+        <div><div style="font-size:0.85rem; opacity:0.8;">Total Balance</div></div>
+        <div style="z-index:2; margin-top:10px;">
+            <span style="font-size:1.5rem; opacity:0.9;">₹</span>
+            <span id="wallet-balance" style="font-size:2.5rem; font-weight:900;">0.00</span>
+        </div>
+        <div style="z-index:2; display:flex; gap:10px; margin:14px 0;">
+            <div style="flex:1; background:rgba(255,255,255,0.15); border-radius:12px; padding:10px;">
+                <div style="font-size:0.68rem; opacity:0.85;">Deposit Balance</div>
+                <div style="font-weight:800;">₹ <span id="wallet-deposit-bal">0.00</span></div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.15); border-radius:12px; padding:10px;">
+                <div style="font-size:0.68rem; opacity:0.85;">Withdrawal Balance</div>
+                <div style="font-weight:800;">₹ <span id="wallet-withdraw-bal">0.00</span></div>
+            </div>
+        </div>
+        <div style="z-index:2; display:flex; gap:10px; margin-bottom:14px;">
+            <div style="flex:1; background:rgba(255,255,255,0.10); border-radius:12px; padding:8px 10px;">
+                <div style="font-size:0.65rem; opacity:0.8;">Total Deposit</div>
+                <div style="font-weight:700; font-size:0.9rem;">₹ <span id="wallet-total-deposit">0</span></div>
+            </div>
+            <div style="flex:1; background:rgba(255,255,255,0.10); border-radius:12px; padding:8px 10px;">
+                <div style="font-size:0.65rem; opacity:0.8;">Total Withdrawal</div>
+                <div style="font-weight:700; font-size:0.9rem;">₹ <span id="wallet-total-withdraw">0</span></div>
+            </div>
+        </div>
+        <div style="z-index:2; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div class="user-chip" id="wallet-uid">UID: ---</div>
+            <div style="font-size:1.5rem; opacity:0.6;"><i class="fa-solid fa-wallet"></i></div>
+        </div>
+
+    </div>
+    <div class="wallet-actions">
+        <button class="action-btn" onclick="app.checkLogin(() => ui.openModal('modal-deposit'))">
+            <div class="action-icon"><i class="fa-solid fa-plus"></i></div>
+            <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">Add Money</span>
+        </button>
+        <button class="action-btn" onclick="app.checkLogin(() => ui.openModal('modal-withdraw'))">
+            <div class="action-icon"><i class="fa-solid fa-arrow-down-long"></i></div>
+            <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">Withdraw</span>
+        </button>
+        <button class="action-btn" style="display:none" onclick="app.checkLogin(() => ui.openModal('modal-transfer'))">
+            <div class="action-icon"><i class="fa-solid fa-paper-plane"></i></div>
+            <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">Transfer</span>
+        </button>
+        <button class="action-btn" onclick="app.openWhatsApp()">
+            <div class="action-icon"><i class="fa-brands fa-whatsapp"></i></div>
+            <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted);">Support</span>
+        </button>
+    </div>
+    <div style="padding:0 25px 10px; display:flex; justify-content:space-between; align-items:center;"><h3>Transactions</h3></div>
+    <div id="trx-list" style="padding:0 20px 20px;"></div>
+</div>
