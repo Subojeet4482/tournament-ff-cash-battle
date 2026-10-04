@@ -1,0 +1,8 @@
+/* Deposit modal (UPI / crypto) */
+.dep-tabs { display:flex; background:var(--bg-input); border-radius:12px; padding:4px; margin-bottom:20px; gap:4px; }
+.dep-tab { flex:1; text-align:center; padding:10px; border-radius:10px; font-weight:600; cursor:pointer; color:var(--text-muted); font-size:0.9rem; transition:0.2s; }
+.dep-tab.active { background:var(--bg-card); color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+.pay-copy-box { display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:12px; border:1px dashed var(--primary); border-radius:12px; margin-bottom:15px; }
+.pay-num { font-weight:800; font-size:1rem; font-family:monospace; letter-spacing:1px; color:var(--text-main); }
+.copy-btn { background:var(--bg-input); padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700; color:var(--primary); flex-shrink:0; }
+.crypto-addr-box { background:var(--bg-input); padding:12px; border-radius:10px; border:1px solid var(--border); margin-bottom:15px; word-break:break-all; font-family:monospace; font-size:0.85rem; }
