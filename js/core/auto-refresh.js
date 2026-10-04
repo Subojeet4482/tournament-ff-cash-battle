@@ -20,9 +20,9 @@ window.autoRefresh = (function(){
                 const prev = window.db.user_data || {};
                 const nu = s.data();
                 window.db.user_data = nu;
-                window.db.balance = nu.balance || 0;
-                window.db.depositBalance = nu.depositBalance || 0;
+                window.db.depositBalance = nu.depositBalance !== undefined ? nu.depositBalance : (nu.balance||0);
                 window.db.withdrawBalance = nu.withdrawBalance || 0;
+                window.db.balance = window.db.depositBalance + window.db.withdrawBalance;
                 // Update visible balance badges if any
                 document.querySelectorAll('[data-live=balance]').forEach(el => el.innerText = (nu.balance||0));
                 // Re-render profile if it's the visible sub-view
