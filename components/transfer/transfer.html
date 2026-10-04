@@ -1,0 +1,24 @@
+<!-- TRANSFER -->
+<div id="modal-transfer" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 style="margin:0">Transfer Balance</h2>
+            <div onclick="ui.closeModal()" style="font-size:1.5rem; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+        <div style="text-align:right; font-size:0.8rem; margin-bottom:15px; color:var(--text-muted);">Available: <b class="text-success">₹ <span class="live-balance">0.00</span></b></div>
+        <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-muted);">Recipient Player ID</label>
+        <input type="text" id="tr-uid" class="input-box" placeholder="Enter 7-digit Player ID" oninput="app.verifyRecipient(this.value)">
+        <div id="recipient-status" style="font-size:0.8rem; margin:-10px 0 10px; font-weight:600; min-height:18px;"></div>
+        <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-muted);">Amount (₹)</label>
+        <input type="number" id="tr-amount" class="input-box" placeholder="Min: ₹10" oninput="app.validateAmount(this)">
+        <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-muted);">Note (Optional)</label>
+        <input type="text" id="tr-note" class="input-box" placeholder="e.g. Gift">
+        <div style="border-top:1px dashed var(--border); padding-top:15px; margin-top:5px;">
+            <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-muted);">Security Password *</label>
+            <input type="password" id="tr-pass" class="input-box" placeholder="Enter App Password">
+        </div>
+        <button class="btn-main" onclick="app.transfer()" style="margin-top:15px;">Confirm & Send</button>
+    </div>
+</div>
