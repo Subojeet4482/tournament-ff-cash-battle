@@ -1,0 +1,18 @@
+<!-- SETTINGS -->
+<div id="modal-settings" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <h2 style="margin-bottom:20px;">Security & Payment</h2>
+        <input type="text" id="set-pay-method" class="input-box" placeholder="UPI / Account Number">
+        <input type="text" id="set-pay-name" class="input-box" placeholder="Account Holder Name">
+        <button class="btn-main btn-sm" onclick="app.savePaymentSettings()" style="margin-top:10px; width:100%;">Update Payment Info</button>
+
+        <div style="margin-top:22px; padding-top:16px; border-top:1px solid var(--border);">
+            <h3 style="margin:0 0 12px; font-size:1rem; font-weight:800;">Need Help? Contact Support</h3>
+            <div id="sec-support-list" style="display:flex; flex-direction:column; gap:10px;">
+                <div style="color:var(--text-muted); font-size:0.85rem;">No support contacts configured yet.</div>
+            </div>
+        </div>
+    </div>
+</div>
