@@ -1,0 +1,11 @@
+/* Reset + small utility classes */
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; }
+html,body { height:100%; width:100%; font-family:'Inter',sans-serif; background:var(--bg-body); color:var(--text-main); font-size:14px; overflow:hidden; }
+.text-primary{color:var(--primary)}
+.text-success{color:var(--success)}
+.text-danger{color:var(--danger)}
+.text-muted{color:var(--text-muted)}
+.bold{font-weight:600}
+.hidden{display:none !important}
+.guest-hidden{display:none !important}
+.guest-show{display:block !important}
