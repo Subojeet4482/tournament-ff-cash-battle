@@ -1,0 +1,61 @@
+<!-- SOUND MODAL (Point 4) -->
+<div id="modal-sound" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div onclick="ui.closeModal()" style="cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-arrow-left"></i></div>
+                <h2 style="margin:0">Sound Settings</h2>
+            </div>
+        </div>
+        <div style="background:var(--bg-input); padding:15px; border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:700;"><i class="fa-solid fa-music text-primary"></i> Background Sound</span>
+                <span id="sound-app-val" style="font-weight:700; color:var(--primary);">50%</span>
+            </div>
+            <input type="range" id="sound-app" min="0" max="100" value="50" style="width:100%;" oninput="app.setSound('app',this.value)">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;">Slide fully left = OFF</div>
+        </div>
+        <div style="background:var(--bg-input); padding:15px; border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:700;"><i class="fa-solid fa-hand-pointer text-primary"></i> Touch Sound</span>
+                <span id="sound-touch-val" style="font-weight:700; color:var(--primary);">50%</span>
+            </div>
+            <input type="range" id="sound-touch" min="0" max="100" value="50" style="width:100%;" oninput="app.setSound('touch',this.value)">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;">Only plays on bottom nav taps. Slide fully left = OFF</div>
+        </div>
+        <div style="background:var(--bg-input); padding:15px; border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:700;"><i class="fa-solid fa-money-bill-wave text-primary"></i> Withdrawal Sound</span>
+                <span id="sound-withdrawal-val" style="font-weight:700; color:var(--primary);">80%</span>
+            </div>
+            <input type="range" id="sound-withdrawal" min="0" max="100" value="80" style="width:100%;" oninput="app.setSound('withdrawal',this.value)">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;">Slide fully left = OFF</div>
+        </div>
+        <div style="background:var(--bg-input); padding:15px; border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:700;"><i class="fa-regular fa-bell text-primary"></i> Notification Sound</span>
+                <span id="sound-notification-val" style="font-weight:700; color:var(--primary);">80%</span>
+            </div>
+            <input type="range" id="sound-notification" min="0" max="100" value="80" style="width:100%;" oninput="app.setSound('notification',this.value)">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;">Slide fully left = OFF</div>
+        </div>
+        <div style="background:var(--bg-input); padding:15px; border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:700;"><i class="fa-solid fa-gear text-primary"></i> Settings Sound</span>
+                <span id="sound-settings-val" style="font-weight:700; color:var(--primary);">80%</span>
+            </div>
+            <input type="range" id="sound-settings" min="0" max="100" value="80" style="width:100%;" oninput="app.setSound('settings',this.value)">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;">Plays when opening settings. Slide fully left = OFF</div>
+        </div>
+        <div style="background:var(--bg-input); padding:15px; border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-weight:700;"><i class="fa-solid fa-trash-can text-primary"></i> Clear Sound</span>
+                <span id="sound-clear-val" style="font-weight:700; color:var(--primary);">80%</span>
+            </div>
+            <input type="range" id="sound-clear" min="0" max="100" value="80" style="width:100%;" oninput="app.setSound('clear',this.value)">
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;">Plays when clearing notifications. Slide fully left = OFF</div>
+        </div>
+    </div>
+</div>
