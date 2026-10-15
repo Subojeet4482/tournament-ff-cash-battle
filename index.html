@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FF Cash Battle</title>
+    <meta name="theme-color" content="#f4f6fb">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -37,11 +38,14 @@
     <link rel="stylesheet" href="pages/chat/friends/friends.css">
     <link rel="stylesheet" href="pages/chat/thread/thread.css">
     <link rel="stylesheet" href="components/session/session.css">
+    <link rel="stylesheet" href="components/trx-detail/trx-detail.css">
     <link rel="stylesheet" href="css/base/animations.css">
+    <link rel="stylesheet" href="css/base/polish.css">
     <link rel="stylesheet" href="pages/chat/chat-ui.css">
     <link rel="stylesheet" href="css/themes/dark.css">
 </head>
 <body>
+<script>try{if(localStorage.getItem("darkMode")==="true"){document.body.classList.add("dark");var m=document.querySelector('meta[name="theme-color"]');if(m)m.content="#0b1020";}}catch(e){}</script>
 
 <div data-include="components/toast/toast.html"></div>
 
@@ -88,6 +92,19 @@
             <h3 id="auth-done-title">Welcome back!</h3>
             <p id="auth-done-sub">Logging you in…</p>
         </div>
+
+        <!-- email verification screen (next page after Sign Up) -->
+        <div class="auth-verify" id="auth-verify" data-vs="wait">
+            <div class="av-ico" id="av-ico"><span class="av-ring"></span><i class="fa-solid fa-envelope"></i></div>
+            <h3 id="av-title">Verify your email</h3>
+            <p id="av-text" class="av-text"></p>
+            <div class="av-timer" id="av-timer">
+                <div class="av-bar"><span id="av-bar"></span></div>
+                <div class="av-time" id="av-time">Verify within 60s</div>
+            </div>
+            <a id="av-mail" class="av-mail hidden" href="https://mail.google.com/" target="_blank" rel="noopener"><i class="fa-brands fa-google"></i> Open Gmail</a>
+            <button type="button" class="btn-main" id="av-btn" onclick="auth.verifyAction()">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -133,6 +150,8 @@
 <div data-include="pages/history/history.html"></div>
 
 <div data-include="pages/setting/sound.html"></div>
+
+<div data-include="components/trx-detail/trx-detail.html"></div>
 
 <script type="module" src="js/main.js"></script>
 </body>
