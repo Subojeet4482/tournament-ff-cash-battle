@@ -1,0 +1,23 @@
+<!-- GIFT CODE -->
+<div id="modal-gift" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet gift-sheet">
+        <div class="sheet-handle"></div>
+        <div class="gift-hero" id="gift-hero">
+            <div class="gift-box"><div class="gift-lid"></div><div class="gift-body"></div><i class="fa-solid fa-gift"></i></div>
+            <h2>Redeem Gift Code</h2>
+            <p>Enter your 24-character code exactly as given.</p>
+        </div>
+
+        <div class="gift-field" id="gift-field">
+            <input type="text" id="gift-input" class="gift-input" maxlength="24" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••••••••••••••••••••" oninput="app.giftInput(this)" onkeydown="if(event.key==='Enter')app.redeemGift()">
+            <button type="button" class="gift-paste" onclick="app.giftPaste()" title="Paste"><i class="fa-regular fa-paste"></i></button>
+        </div>
+        <div class="gift-meter"><i id="gift-bar"></i></div>
+        <div class="gift-sub"><span id="gift-count">0 / 24</span><span id="gift-tries" class="gift-tries"></span></div>
+        <div id="gift-msg" class="gift-msg"></div>
+
+        <button class="btn-main" id="gift-btn" onclick="app.redeemGift()" disabled><i class="fa-solid fa-gift"></i> Redeem</button>
+        <div class="gift-note"><i class="fa-solid fa-shield-halved"></i> One code can be used once per account. 5 wrong tries lock redeeming for 24 hours.</div>
+    </div>
+</div>
