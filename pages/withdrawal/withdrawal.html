@@ -1,0 +1,131 @@
+<!-- ===== NEW WITHDRAW MODAL ===== -->
+<div id="modal-withdraw" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0">Withdraw</h2>
+            <div onclick="ui.closeModal()" style="font-size:1.5rem; cursor:pointer; color:var(--text-muted);"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+
+        <!-- Balance -->
+        <div class="wd-balance-box">
+            <span class="text-muted" style="font-size:0.75rem;">Available Balance</span>
+            <div style="font-size:1.3rem; font-weight:900; color:var(--primary); display:flex; align-items:center; justify-content:center; gap:8px;"><img class="coin-ico" src="assets/img/ff-coin.png" alt="FF coin" draggable="false"><span class="live-balance">0.00</span></div>
+        </div>
+
+        <!-- Method Select -->
+        <p style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Select Method</p>
+        <div class="wd-method-grid">
+            <div class="wd-method-card" id="wd-card-upi" onclick="app.selectWdMethod('upi')">
+                <div class="wd-m-icon">📲</div>
+                <div class="wd-m-name">UPI</div>
+                <div class="wd-m-sub">GPay / PhonePe / Paytm</div>
+            </div>
+            <div class="wd-method-card" id="wd-card-bank" onclick="app.selectWdMethod('bank')">
+                <div class="wd-m-icon">🏦</div>
+                <div class="wd-m-name">Bank Transfer</div>
+                <div class="wd-m-sub">IMPS / NEFT</div>
+            </div>
+        </div>
+
+        <!-- ===== UPI SECTION ===== -->
+        <div id="wd-upi-section" class="wd-section">
+            <div class="wd-info-box">
+                <div class="wd-info-row"><span class="wd-info-label">Min Amount</span><span class="wd-info-val orange">₹ 20</span></div>
+                <div class="wd-info-row"><span class="wd-info-label">Processing Time</span><span class="wd-info-val green">15 – 20 min</span></div>
+                <div class="wd-info-row"><span class="wd-info-label">Service Fee</span><span class="wd-info-val red">₹ 2 deducted</span></div>
+            </div>
+            <div class="wd-saved" id="wd-upi-saved" style="display:none;">
+                <div class="wd-saved-ico"><i class="fa-solid fa-bookmark"></i></div>
+                <div class="wd-saved-t"><b>Saved UPI details</b><small id="wd-upi-saved-txt"></small></div>
+                <button type="button" class="wd-saved-rm" onclick="app.removeSavedWd('upi')"><i class="fa-solid fa-trash"></i> Remove</button>
+            </div>
+            <div class="wd-field">
+                <label class="wd-label" for="wd-upi-name">Name (as per UPI)</label>
+                <div class="wd-input"><i class="fa-solid fa-user"></i>
+                    <input type="text" id="wd-upi-name" class="input-box" placeholder="Your full name" autocomplete="off" autocapitalize="words" maxlength="60"></div>
+            </div>
+            <div class="wd-field">
+                <label class="wd-label" for="wd-upi-id">UPI ID</label>
+                <div class="wd-input"><i class="fa-solid fa-at"></i>
+                    <input type="text" id="wd-upi-id" class="input-box" placeholder="e.g. name@okhdfcbank" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" oninput="app.wdFmtUpi(this)"></div>
+                <div class="wd-hint" id="wd-upi-hint">Format: name@bank</div>
+            </div>
+            <div class="wd-field">
+                <label class="wd-label" for="wd-upi-amount">Amount</label>
+                <div class="wd-input"><span class="wd-rupee"><img class="coin-ico xs" src="assets/img/ff-coin.png" alt="" draggable="false"></span>
+                    <input type="number" id="wd-upi-amount" class="input-box" placeholder="Min ₹20" inputmode="decimal" oninput="app.updateNet('upi', this.value)"></div>
+            </div>
+            <div id="wd-upi-net" class="wd-net" style="display:none;">You will receive: ₹<span id="wd-upi-net-val">0</span></div>
+            <label class="wd-save-chk"><input type="checkbox" id="wd-upi-save" checked><span>Save these details on this device for next time</span></label>
+            <button class="btn-main" id="wd-upi-btn" onclick="app.withdrawUPI()"><i class="fa-solid fa-paper-plane"></i> Submit UPI Withdrawal</button>
+        </div>
+
+        <!-- ===== BANK SECTION ===== -->
+        <div id="wd-bank-section" class="wd-section">
+            <!-- Info box -->
+            <div class="wd-info-box">
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Min Amount</span>
+                    <span class="wd-info-val orange">₹ 20</span>
+                </div>
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Processing Time</span>
+                    <span class="wd-info-val green">15 – 20 min</span>
+                </div>
+                <div class="wd-info-row">
+                    <span class="wd-info-label">Service Fee</span>
+                    <span class="wd-info-val red">₹ 2 deducted</span>
+                </div>
+            </div>
+
+            <div class="wd-saved" id="wd-bank-saved" style="display:none;">
+                <div class="wd-saved-ico"><i class="fa-solid fa-bookmark"></i></div>
+                <div class="wd-saved-t"><b>Saved bank details</b><small id="wd-bank-saved-txt"></small></div>
+                <button type="button" class="wd-saved-rm" onclick="app.removeSavedWd('bank')"><i class="fa-solid fa-trash"></i> Remove</button>
+            </div>
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-name">Account Holder Name</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="wd-bank-name" class="input-box" placeholder="Name as per bank passbook" autocomplete="off" autocapitalize="words" maxlength="60">
+                </div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-account">Account Number</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <input type="text" id="wd-bank-account" class="input-box" placeholder="Enter account number" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="18" oninput="app.wdFmtAccount(this)">
+                    <span class="wd-count" id="wd-acc-count">0/18</span>
+                </div>
+                <div class="wd-hint" id="wd-acc-hint">Only digits &bull; 9 to 18 numbers</div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-ifsc">IFSC Code</label>
+                <div class="wd-input">
+                    <i class="fa-solid fa-hashtag"></i>
+                    <input type="text" id="wd-bank-ifsc" class="input-box wd-upper" placeholder="e.g. SBIN0001234" autocomplete="off" autocapitalize="characters" maxlength="11" oninput="app.wdFmtIfsc(this)">
+                    <span class="wd-count" id="wd-ifsc-count">0/11</span>
+                </div>
+                <div class="wd-hint" id="wd-ifsc-hint">11 characters &bull; 5th character is always 0</div>
+            </div>
+
+            <div class="wd-field">
+                <label class="wd-label" for="wd-bank-amount">Amount</label>
+                <div class="wd-input">
+                    <span class="wd-rupee"><img class="coin-ico xs" src="assets/img/ff-coin.png" alt="" draggable="false"></span>
+                    <input type="number" id="wd-bank-amount" class="input-box" placeholder="Min ₹20" inputmode="decimal" oninput="app.updateNet('bank', this.value)">
+                </div>
+            </div>
+            <div id="wd-bank-net" class="wd-net" style="display:none;">
+                You will receive: ₹<span id="wd-bank-net-val">0</span>
+            </div>
+            <label class="wd-save-chk"><input type="checkbox" id="wd-bank-save" checked><span>Save these details on this device for next time</span></label>
+            <button class="btn-main" id="wd-bank-btn" onclick="app.withdrawBank()"><i class="fa-solid fa-paper-plane"></i> Submit Bank Withdrawal</button>
+        </div>
+
+            </div>
+</div>
