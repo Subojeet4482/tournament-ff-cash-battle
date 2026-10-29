@@ -1,0 +1,7 @@
+/* Bottom navigation bar */
+.nav-bar { position:fixed; bottom:0; width:100%; height:var(--nav-height); background:var(--bg-card); border-top:1px solid var(--border); display:flex; justify-content:space-around; align-items:center; z-index:500; box-shadow:0 -5px 20px rgba(0,0,0,0.03); }
+.nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted); gap:5px; padding:5px; border-radius:12px; transition:0.2s; flex:1; height:100%; cursor:pointer; }
+.nav-item i { font-size:1.3rem; margin-bottom:2px; }
+.nav-item span { font-weight:500; font-size:0.75rem; }
+.nav-item.active { color:var(--primary); }
+.nav-item.active i { transform:translateY(-2px); }
