@@ -1,0 +1,7 @@
+<nav class="nav-bar">
+    <div class="nav-item active" onclick="nav.goto('home', this)"><i class="fa-solid fa-house"></i><span>Home</span></div>
+    <div class="nav-item" onclick="app.checkLogin(() => nav.goto('matches', this))"><i class="fa-solid fa-gamepad"></i><span>Matches</span></div>
+    <div class="nav-item" onclick="app.checkLogin(() => nav.goto('chat', this))"><i class="fa-solid fa-comments"></i><span>Chat</span></div>
+    <div class="nav-item" onclick="nav.goto('leaderboard', this)"><i class="fa-solid fa-trophy"></i><span>Rank</span></div>
+    <div class="nav-item" onclick="app.checkLogin(() => nav.goto('wallet', this))"><i class="fa-solid fa-wallet"></i><span>Wallet</span></div>
+</nav>
