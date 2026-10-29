@@ -1,0 +1,5 @@
+/* Auth switch links (used by both Login and Register forms) */
+.auth-switch-text { margin-top:18px; font-size:0.9rem; color:var(--text-muted); }
+.auth-switch-btn { color:var(--primary); font-weight:700; cursor:pointer; position:relative; transition:opacity .2s; }
+.auth-switch-btn::after { content:''; position:absolute; left:0; bottom:-2px; width:100%; height:2px; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform .3s cubic-bezier(.22,1,.36,1); }
+.auth-switch-btn:hover::after, .auth-switch-btn:active::after { transform:scaleX(1); }
