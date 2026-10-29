@@ -1,0 +1,19 @@
+<!-- DEPOSIT VERIFY OVERLAY -->
+<div id="dep-verify-overlay" class="dvo" style="display:none;">
+  <div class="dvo-card" id="dvo-card" data-mode="loading">
+    <div class="dvo-icon" id="dvo-icon"><img class="dvo-coin" src="assets/img/ff-coin.png" alt="FF coin" draggable="false"></div>
+    <div class="dvo-title" id="dvo-title">Verifying payment...</div>
+    <div class="dvo-sub" id="dvo-sub">We are matching your payment with our bank record. This takes about 10 seconds.</div>
+    <div class="dvo-info" id="dvo-info" style="display:none;"><div><small>Amount</small><b id="dvo-amt">₹0</b></div><div><small id="dvo-ref-lbl">UTR</small><b id="dvo-ref">--</b></div></div>
+    <div class="dvo-steps" id="dvo-steps">
+      <div class="dvo-step" data-s="1"><i class="fa-solid fa-paper-plane"></i><span>Submitted</span></div>
+      <div class="dvo-line"><i></i></div>
+      <div class="dvo-step" data-s="2"><i class="fa-solid fa-building-columns"></i><span>Matching</span></div>
+      <div class="dvo-line"><i></i></div>
+      <div class="dvo-step" data-s="3"><i class="fa-solid fa-check"></i><span>Credited</span></div>
+    </div>
+    <div class="dvo-bar" id="dvo-barwrap"><i id="dvo-bar"></i></div>
+    <div id="dvo-timer" class="dvo-timer">Checking... 10s</div>
+    <button id="dvo-close" class="dvo-btn" style="display:none;" onclick="app._hideVerifyOverlay()">OK</button>
+  </div>
+</div>
