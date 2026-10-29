@@ -1,0 +1,60 @@
+<!-- ===== CHAT: landing card (tab) + full-screen social app ===== -->
+<div id="page-chat" class="page-section hidden">
+    <div class="cl-wrap">
+        <div class="cl-hero" id="cl-hero" onclick="chat.open()">
+            <span class="cl-b b1"></span><span class="cl-b b2"></span><span class="cl-b b3"></span>
+            <div class="cl-emoji" id="cl-emoji">🔥</div>
+            <div class="cl-name" id="cl-name">Booyah Lounge</div>
+            <div class="cl-tag" id="cl-tag">Meet players, flex wins, find your squad</div>
+            <div class="cl-go"><span>Enter</span><i class="fa-solid fa-arrow-right"></i></div>
+            <span class="cl-dot hidden" id="cl-dot"></span>
+        </div>
+        <div class="cl-chips" id="cl-chips"></div>
+    </div>
+</div>
+
+<div id="chat-app" class="ca" aria-hidden="true">
+    <div class="ca-bar">
+        <button class="ca-back" onclick="chat.close()" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="ca-title"><span id="ca-emoji">🔥</span><b id="ca-name">Booyah Lounge</b></div>
+        <div class="ca-bar-r" id="ca-bar-r"></div>
+    </div>
+    <div class="ca-body">
+        <section class="ca-pane" id="cp-chat"></section>
+        <section class="ca-pane" id="cp-profile"></section>
+        <section class="ca-pane" id="cp-game"></section>
+        <section class="ca-pane" id="cp-search"></section>
+    </div>
+    <nav class="ca-tabs" id="ca-tabs">
+        <button data-t="chat" onclick="chat.tab('chat')"><i class="fa-solid fa-comments"></i><span>Chat</span><em class="hidden" id="tb-chat"></em></button>
+        <button data-t="profile" onclick="chat.tab('profile')"><i class="fa-solid fa-user"></i><span>Profile</span><em class="hidden" id="tb-profile"></em></button>
+        <button data-t="game" onclick="chat.tab('game')"><i class="fa-solid fa-gamepad"></i><span>Game</span></button>
+        <button data-t="search" onclick="chat.tab('search')"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button>
+        <i class="ca-tab-ind" id="ca-ind"></i>
+    </nav>
+
+    <!-- conversation (world / friend / group) -->
+    <div class="ct" id="ct">
+        <div class="ct-bar">
+            <button class="ca-back" onclick="chat.closeThread()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="ct-av" id="ct-av"></div>
+            <div class="ct-who"><b id="ct-name">—</b><small id="ct-sub"></small></div>
+            <button class="ct-dots" id="ct-dots" onclick="chat.threadMenu()"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        </div>
+        <div class="ct-msgs" id="ct-msgs"></div>
+        <div class="ct-lock hidden" id="ct-lock"></div>
+        <div class="ct-in" id="ct-in">
+            <div class="ct-edit hidden" id="ct-edit"><i class="fa-solid fa-pen"></i><span>Editing message</span><button onclick="chat.cancelEdit()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="ct-row"><textarea id="ct-text" rows="1" maxlength="1000" placeholder="Message…" oninput="chat.grow(this)" onkeydown="chat.key(event)"></textarea>
+            <button class="ct-send" id="ct-send" onclick="chat.send()"><i class="fa-solid fa-paper-plane"></i></button></div>
+        </div>
+        <div class="ct-menu hidden" id="ct-menu"></div>
+    </div>
+
+    <!-- floating chat button (Game tab) -->
+    <button class="ca-fab hidden" id="ca-fab" onclick="chat.openWorld()"><i class="fa-solid fa-comment-dots"></i></button>
+
+    <!-- bottom sheet: history / confirm / input -->
+    <div class="cs-ov" id="cs-ov" onclick="chat.sheetClose()"></div>
+    <div class="cs" id="cs"></div>
+</div>
