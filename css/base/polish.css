@@ -1,0 +1,82 @@
+/* ==========================================================================
+   UI polish layer — loaded after animations.css (dark overrides live at the bottom).
+   Pure additions: glass header / nav, richer match + wallet cards, ripple, value bump.
+   All motion is transform/opacity based and disabled by prefers-reduced-motion.
+   ========================================================================== */
+
+/* ---------- Glass header + bottom nav ---------- */
+header {
+  background:var(--bg-card);
+  background:color-mix(in srgb, var(--bg-card) 84%, transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(170%); backdrop-filter:blur(14px) saturate(170%);
+  border-bottom-color:transparent;
+}
+header::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:linear-gradient(90deg,transparent,var(--primary),#f43f5e,transparent); opacity:.55; transform-origin:center; animation:pl-line 1.2s var(--ease-out) backwards; pointer-events:none; }
+@keyframes pl-line { from{transform:scaleX(0); opacity:0} to{transform:scaleX(1); opacity:.55} }
+
+.nav-bar {
+  background:var(--bg-card);
+  background:color-mix(in srgb, var(--bg-card) 88%, transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(170%); backdrop-filter:blur(14px) saturate(170%);
+  border-radius:22px 22px 0 0; border-top-color:transparent; box-shadow:0 -8px 28px rgba(15,23,42,.08);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.nav-item { position:relative; }
+.nav-item::before { content:''; position:absolute; top:0; left:50%; width:28px; height:3px; border-radius:0 0 6px 6px; background:linear-gradient(90deg,var(--primary),#7c3aed); transform:translateX(-50%) scaleX(0); transition:transform .4s var(--ease-spring); }
+.nav-item.active::before { transform:translateX(-50%) scaleX(1); }
+.nav-item.active i { filter:drop-shadow(0 5px 7px rgba(79,70,229,.4)); }
+.nav-item.active span { font-weight:700; }
+
+/* ---------- Match cards ---------- */
+.match-card { position:relative; border-radius:22px; box-shadow:0 14px 30px -12px rgba(15,23,42,.18); }
+.match-card::before { content:''; position:absolute; left:0; right:0; top:0; height:3px; z-index:4; background:linear-gradient(90deg,var(--primary),#7c3aed,#f43f5e); background-size:200% 100%; animation:pl-grad 6s linear infinite; }
+@keyframes pl-grad { to{background-position:200% 0} }
+.card-stats-grid { background:linear-gradient(135deg,#f8fafc,#eef2ff); border-radius:16px; }
+.card-stats-grid > div { position:relative; }
+.card-stats-grid > div + div::before { content:''; position:absolute; left:-5px; top:15%; bottom:15%; width:1px; background:var(--border); }
+.stat-val { letter-spacing:-.2px; }
+.progress-bar { height:9px; background:var(--bg-input); box-shadow:inset 0 1px 2px rgba(15,23,42,.08); }
+.progress-fill { background:linear-gradient(90deg,var(--primary),#7c3aed,#f43f5e); box-shadow:0 0 10px rgba(124,58,237,.45); }
+.match-body .btn-main { border-radius:14px; letter-spacing:.4px; font-weight:800; box-shadow:0 10px 22px -8px rgba(79,70,229,.6); }
+.match-body .btn-main:disabled { box-shadow:none; }
+.badge-type { backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+
+/* ---------- Wallet ---------- */
+.credit-card { background:linear-gradient(135deg,#4f46e5,#7c3aed 55%,#f43f5e); background-size:180% 180%; animation:fx-pop .6s var(--ease-spring) backwards, pl-flow 9s ease-in-out .6s infinite; box-shadow:0 20px 40px -12px rgba(124,58,237,.55); }
+@keyframes pl-flow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.credit-card::before { animation:fx-float 6s ease-in-out infinite; }
+.action-icon { transition:transform .3s var(--ease-spring), box-shadow .25s, color .2s, background .2s; position:relative; overflow:hidden; }
+.action-btn:active .action-icon { transform:scale(.88); }
+@media (hover:hover){ .action-btn:hover .action-icon { transform:translateY(-3px); box-shadow:0 12px 22px -6px rgba(79,70,229,.35); } }
+.action-btn .action-icon i { transition:transform .35s var(--ease-spring); }
+.action-btn:active .action-icon i { transform:scale(1.2) rotate(-8deg); }
+
+/* ---------- Sheets / inputs ---------- */
+.modal-sheet { border-radius:28px 28px 0 0; box-shadow:0 -20px 50px rgba(15,23,42,.18); }
+.sheet-handle { width:44px; background:var(--border); transition:width .3s var(--ease-spring), background .2s; }
+.modal-wrap.active .sheet-handle { animation:pl-handle .6s var(--ease-spring) .15s backwards; }
+@keyframes pl-handle { from{width:16px; opacity:0} to{width:44px; opacity:1} }
+.input-box { transition:border-color .25s, box-shadow .25s, background .25s, transform .2s var(--ease-out); }
+.input-group:focus-within > i { color:var(--primary); transform:translateY(-50%) scale(1.15); transition:transform .3s var(--ease-spring), color .2s; }
+.filter-chip.active { background:linear-gradient(135deg,var(--primary),#7c3aed); border-color:transparent; }
+
+/* ---------- Ripple (js/core/polish.js) ---------- */
+.btn-main, .claim-btn, .nf-btn, .filter-chip, .mm-tab, .dm-item, .action-icon, .wallet-pill, .nf-clear { position:relative; overflow:hidden; }
+.fx-ripple { position:absolute; border-radius:50%; background:currentColor; opacity:.28; transform:scale(0); pointer-events:none; animation:pl-ripple .6s ease-out forwards; }
+@keyframes pl-ripple { to{ transform:scale(1); opacity:0 } }
+
+/* ---------- Value bump (balances / counters that change) ---------- */
+.val-bump { display:inline-block; animation:pl-bump .6s var(--ease-spring); }
+@keyframes pl-bump { 0%{transform:scale(1)} 35%{transform:scale(1.22); color:var(--success)} 100%{transform:scale(1)} }
+
+/* ---------- Dark ---------- */
+body.dark .nav-bar { box-shadow:0 -8px 28px rgba(0,0,0,.45); }
+body.dark .card-stats-grid { background:linear-gradient(135deg,var(--bg-body),#1a2144); }
+body.dark .match-card { box-shadow:0 16px 34px -14px rgba(0,0,0,.7); }
+body.dark .modal-sheet { box-shadow:0 -20px 50px rgba(0,0,0,.55); }
+body.dark .progress-fill { box-shadow:0 0 12px rgba(167,139,250,.5); }
+
+@media (prefers-reduced-motion: reduce){
+  header::after, .match-card::before, .credit-card, .credit-card::before { animation:none !important; }
+  .fx-ripple { display:none; }
+}
