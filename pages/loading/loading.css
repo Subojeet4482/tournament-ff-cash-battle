@@ -1,0 +1,50 @@
+/* Loading skeletons (shimmer) */
+.skeleton-anim { background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; color:transparent !important; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk-card { height:260px; margin:0 20px 25px; border-radius:20px; background:white; border:1px solid var(--border); overflow:hidden; }
+.sk-banner { height:140px; width:100%; }
+.sk-body { padding:15px; }
+.sk-row { display:flex; gap:10px; margin-bottom:10px; }
+.sk-box { flex:1; height:50px; border-radius:12px; }
+.sk-line { height:10px; margin-bottom:8px; border-radius:5px; }
+.sk-btn { height:45px; width:100%; border-radius:12px; margin-top:10px; }
+
+/* ===== Payment verify overlay ===== */
+.dvo { position:fixed; inset:0; background:rgba(15,23,42,.88); backdrop-filter:blur(5px); z-index:10000; align-items:center; justify-content:center; padding:26px; opacity:0; transition:opacity .3s; }
+.dvo.on { opacity:1; }
+.dvo-card { background:#fff; border-radius:28px; padding:30px 22px 24px; width:100%; max-width:350px; text-align:center; box-shadow:0 24px 70px rgba(0,0,0,.4); transform:translateY(24px) scale(.94); transition:transform .45s cubic-bezier(.34,1.56,.64,1); }
+.dvo.on .dvo-card { transform:none; }
+.dvo-icon { position:relative; width:92px; height:92px; border-radius:50%; margin:0 auto 18px; display:flex; align-items:center; justify-content:center; font-size:2.3rem; color:#fff; background:radial-gradient(circle,#fff7d6,#fde68a); box-shadow:0 0 0 0 rgba(251,191,36,.5); animation:dvoGlow 1.6s ease-out infinite; }
+.dvo-coin { width:66px; height:66px; animation:coinSpinY 1.4s linear infinite; }
+@keyframes dvoGlow { 0%{box-shadow:0 0 0 0 rgba(251,191,36,.55)} 100%{box-shadow:0 0 0 26px rgba(251,191,36,0)} }
+.dvo-card[data-mode="success"] .dvo-icon { background:linear-gradient(135deg,#10b981,#34d399); animation:dvoPop .55s cubic-bezier(.34,1.56,.64,1), dvoGlowG 1.6s .5s ease-out infinite; }
+.dvo-card[data-mode="pending"] .dvo-icon { background:linear-gradient(135deg,#f59e0b,#fbbf24); animation:dvoGlowO 1.8s ease-out infinite; }
+.dvo-card[data-mode="pending"] .dvo-icon i { animation:hourFlip 2s ease-in-out infinite; }
+.dvo-card[data-mode="fail"] .dvo-icon { background:linear-gradient(135deg,#ef4444,#f87171); animation:dvoShake .5s; }
+@keyframes dvoPop { 0%{transform:scale(0) rotate(-90deg)} 100%{transform:scale(1) rotate(0)} }
+@keyframes dvoGlowG { 0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)} 100%{box-shadow:0 0 0 26px rgba(16,185,129,0)} }
+@keyframes dvoGlowO { 0%{box-shadow:0 0 0 0 rgba(245,158,11,.5)} 100%{box-shadow:0 0 0 26px rgba(245,158,11,0)} }
+@keyframes hourFlip { 0%,40%{transform:rotate(0)} 60%,100%{transform:rotate(180deg)} }
+@keyframes dvoShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+.dvo-title { font-size:1.2rem; font-weight:900; color:#0f172a; margin-bottom:8px; }
+.dvo-sub { font-size:.85rem; color:#64748b; line-height:1.55; }
+.dvo-info { display:flex; gap:10px; margin:16px 0 4px; }
+.dvo-info > div { flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:9px 8px; min-width:0; }
+.dvo-info small { display:block; font-size:.62rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; }
+.dvo-info b { display:block; font-size:.85rem; color:#0f172a; font-family:monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dvo-steps { display:flex; align-items:center; justify-content:center; gap:4px; margin:18px 0 12px; }
+.dvo-step { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:.62rem; font-weight:700; color:#94a3b8; }
+.dvo-step i { width:34px; height:34px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:.85rem; color:#94a3b8; transition:.4s; }
+.dvo-step.on { color:#4f46e5; } .dvo-step.on i { background:#4f46e5; color:#fff; transform:scale(1.08); }
+.dvo-card[data-mode="success"] .dvo-step.on { color:#10b981; } .dvo-card[data-mode="success"] .dvo-step.on i { background:#10b981; }
+.dvo-card[data-mode="fail"] .dvo-step.on i { background:#ef4444; }
+.dvo-line { width:28px; height:3px; background:#e2e8f0; border-radius:3px; margin-bottom:18px; overflow:hidden; }
+.dvo-line i { display:block; height:100%; width:0; background:#4f46e5; transition:width .6s; } .dvo-line.on i { width:100%; }
+.dvo-bar { height:6px; background:#e2e8f0; border-radius:6px; overflow:hidden; margin:8px 4px 0; }
+.dvo-bar i { display:block; height:100%; width:40%; background:linear-gradient(90deg,#4f46e5,#f43f5e,#4f46e5); background-size:200% 100%; border-radius:6px; animation:dvoBar 1.4s linear infinite, dvoSlide 1.6s ease-in-out infinite; }
+@keyframes dvoBar { to{background-position:-200% 0} }
+@keyframes dvoSlide { 0%{margin-left:-40%} 100%{margin-left:100%} }
+.dvo-card[data-mode="pending"] .dvo-bar i { background:linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b); background-size:200% 100%; }
+.dvo-timer { margin-top:14px; font-size:.8rem; color:#4f46e5; font-weight:700; }
+.dvo-btn { margin-top:16px; background:#4f46e5; color:#fff; border:none; padding:12px 30px; border-radius:50px; font-weight:800; cursor:pointer; box-shadow:0 8px 18px -6px rgba(79,70,229,.6); }
+.dvo-btn:active { transform:scale(.95); }
