@@ -1,0 +1,9 @@
+/* Wallet page: card + action buttons */
+.credit-card { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); margin:20px; padding:25px; border-radius:24px; color:white; position:relative; overflow:hidden; box-shadow:0 15px 35px -5px rgba(79,70,229,0.4); min-height:180px; display:flex; flex-direction:column; justify-content:space-between; }
+.credit-card::before,.credit-card::after { content:''; position:absolute; border-radius:50%; background:rgba(255,255,255,0.1); }
+.credit-card::before { width:150px; height:150px; top:-50px; right:-50px; }
+.credit-card::after { width:100px; height:100px; bottom:-20px; left:-20px; }
+.user-chip { background:rgba(255,255,255,0.2); padding:5px 12px; border-radius:50px; font-size:0.75rem; backdrop-filter:blur(5px); }
+.wallet-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:0 20px; margin-bottom:25px; }
+.action-btn { display:flex; flex-direction:column; align-items:center; gap:8px; background:transparent; border:none; cursor:pointer; }
+.action-icon { width:50px; height:50px; background:var(--bg-card); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--primary); box-shadow:0 4px 15px rgba(0,0,0,0.05); transition:0.2s; border:1px solid var(--border); }
