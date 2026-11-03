@@ -1,0 +1,80 @@
+/* Dark mode overrides (loaded LAST on purpose) */
+body.dark {
+    --bg-body:#0b1020; --bg-card:#151c32; --bg-input:#1f2847;
+    --text-main:#e8ecf7; --text-muted:#8b97b8; --border:#27304f;
+    --primary:#6366f1; --primary-dark:#4338ca; --primary-light:rgba(99,102,241,.22);
+    --shadow-card:0 2px 14px rgba(0,0,0,.35);
+    --theme-wave-bg:#0b1020;
+    color-scheme: dark;
+}
+body.dark header, body.dark .nav-bar { background:var(--bg-card); border-color:var(--border); }
+body.dark .drawer, body.dark .profile-section { background:var(--bg-card); }
+body.dark .modal-sheet { background:var(--bg-card); }
+body.dark .auth-card { background:var(--bg-card); }
+body.dark .match-card, body.dark .mm-card, body.dark .rank-item { background:var(--bg-card); border-color:var(--border); }
+body.dark .card-stats-grid { background:var(--bg-body); border-color:var(--border); }
+body.dark .credit-card { background:linear-gradient(135deg,#312e81,#4f46e5); box-shadow:0 10px 30px rgba(79,70,229,.35); }
+body.dark .filter-chip { background:var(--bg-card); border-color:var(--border); color:var(--text-muted); }
+body.dark .trx-item { background:var(--bg-card); border-color:var(--border); }
+body.dark .mm-tabs-wrapper { background:var(--bg-card); border-color:var(--border); }
+body.dark .p-game-details { background:var(--bg-input); }
+body.dark .drawer-stats .ds-box { background:var(--bg-body); border-color:var(--border); }
+body.dark .action-icon { background:var(--bg-body); border-color:var(--border); }
+body.dark .input-box { background:var(--bg-input); color:var(--text-main); }
+body.dark .podium-section { background:var(--bg-card); }
+body.dark .wallet-actions { background:var(--bg-card); }
+body.dark .notif-card { background:var(--bg-card); border-color:var(--border); }
+body.dark .wd-method-card { background:var(--bg-card); border-color:var(--border); }
+body.dark .wd-method-card.selected { border-color:var(--primary); background:var(--bg-card); }
+body.dark .wd-info-box { background:var(--bg-body); border-color:var(--border); }
+body.dark .crypto-network-chip { background:var(--bg-input); border-color:var(--border); }
+body.dark .crypto-network-chip.selected { background:#1e1a4e; border-color:var(--primary); }
+body.dark .input-box:focus { background:var(--bg-card); }
+body.dark .wd-method-card.selected { background:#1e1a4e; }
+body.dark .crypto-network-chip.selected { background:#1e1a4e; }
+body.dark .claim-card { background:linear-gradient(135deg,#1e1b4b,#3b0764); border-color:var(--primary); }
+
+/* ===== Dark: surfaces get a soft depth + glow ===== */
+body.dark .match-card, body.dark .mm-card, body.dark .rank-item, body.dark .trx-item, body.dark .notif-card { box-shadow:var(--shadow-card); }
+@media (hover:hover){ body.dark .match-card:hover, body.dark .mm-card:hover { box-shadow:0 14px 32px rgba(99,102,241,.25); } }
+body.dark .modal-overlay { background:rgba(2,4,12,.65); }
+body.dark .drawer-overlay { background:rgba(2,4,12,.6); }
+body.dark ::-webkit-scrollbar-thumb { background:#2c3556; }
+body.dark .filter-chip.active { box-shadow:0 6px 16px rgba(99,102,241,.4); }
+
+/* ==========================================================================
+   Theme switch animation (circle reveal from the toggle button) + toggle UI
+   ========================================================================== */
+/* View Transitions: no default cross-fade, JS animates clip-path on the NEW snapshot */
+::view-transition-old(root), ::view-transition-new(root) { animation:none; mix-blend-mode:normal; }
+::view-transition-old(root) { z-index:1; }
+::view-transition-new(root) { z-index:2; }
+/* freeze per-element colour transitions while the snapshot is taken (prevents half-switched colours) */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition:none !important; }
+
+/* Fallback overlay */
+.theme-wave { position:fixed; inset:0; z-index:99999; pointer-events:none; }
+.theme-wave.to-dark  { background:radial-gradient(circle at 30% 20%, #1b2350, #0b1020 70%); }
+.theme-wave.to-light { background:radial-gradient(circle at 30% 20%, #ffffff, #f4f6fb 70%); }
+
+/* Sun / moon icon in the drawer row (both directions animate) */
+.dm-item .theme-ico { position:relative; width:25px; height:25px; flex:none; display:inline-block; }
+.dm-item .theme-ico i { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; width:auto; transition:transform .6s var(--ease-spring), opacity .35s ease; }
+.dm-item .theme-ico .fa-moon { color:#6366f1; transform:rotate(0) scale(1); opacity:1; }
+.dm-item .theme-ico .fa-sun  { color:#f59e0b; transform:rotate(-120deg) scale(.2); opacity:0; }
+body.dark .dm-item .theme-ico .fa-moon { transform:rotate(120deg) scale(.2); opacity:0; }
+body.dark .dm-item .theme-ico .fa-sun  { transform:rotate(0) scale(1); opacity:1; color:#fbbf24; }
+
+/* Sun/moon switch */
+.theme-track { width:50px; height:26px; border-radius:13px; position:relative; overflow:hidden; background:linear-gradient(135deg,#7dd3fc,#38bdf8); box-shadow:inset 0 1px 3px rgba(0,0,0,.18); transition:background .5s ease; }
+.theme-track::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,#1e1b4b,#4338ca); opacity:0; transition:opacity .5s ease; }
+.theme-track::after { content:''; position:absolute; width:2px; height:2px; border-radius:50%; background:#fff; left:12px; top:7px; opacity:0; transform:scale(0);
+    box-shadow:8px 6px 0 0 #fff, 3px 12px 0 0 rgba(255,255,255,.8), 14px 2px 0 0 rgba(255,255,255,.7); transition:opacity .5s ease, transform .5s var(--ease-spring); }
+.theme-track .toggle-dot { z-index:1; width:20px; height:20px; top:3px; left:3px; background:radial-gradient(circle at 35% 35%,#fef08a,#fbbf24); box-shadow:0 0 10px 2px rgba(251,191,36,.7);
+    transition:left .5s var(--ease-spring), background .5s ease, box-shadow .5s ease, transform .5s var(--ease-spring); }
+body.dark .theme-track { background:#1e1b4b; }
+body.dark .theme-track::before { opacity:1; }
+body.dark .theme-track::after { opacity:1; transform:scale(1); }
+body.dark .theme-track .toggle-dot { left:27px; transform:rotate(360deg); background:#e2e8f0; box-shadow:inset -5px -2px 0 0 #94a3b8, 0 0 8px rgba(226,232,240,.35); }
+.theme-track:active .toggle-dot { width:24px; }
+body.dark .theme-track:active .toggle-dot { left:23px; }
