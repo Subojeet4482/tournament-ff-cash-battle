@@ -1,0 +1,13 @@
+<!-- MATCH ROSTER: everyone who joined + the slot they picked -->
+<div id="modal-roster" class="modal-wrap" style="z-index:5100;">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet ro-sheet">
+        <div class="sheet-handle"></div>
+        <div class="ro-head">
+            <div><h3 id="ro-title">Players</h3><p id="ro-sub"></p></div>
+            <button type="button" class="ro-x" onclick="ui.closeModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="ro-bar"><i id="ro-fill"></i></div>
+        <div id="ro-body" class="ro-body"></div>
+    </div>
+</div>
