@@ -1,0 +1,28 @@
+<!-- SETTINGS -->
+<div id="modal-settings" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <h2 style="margin-bottom:20px;">Security & Payment</h2>
+        <input type="text" id="set-pay-method" class="input-box" placeholder="UPI / Account Number">
+        <input type="text" id="set-pay-name" class="input-box" placeholder="Account Holder Name">
+        <button class="btn-main btn-sm" onclick="app.savePaymentSettings()" style="margin-top:10px; width:100%;">Update Payment Info</button>
+
+        <!-- Private settings: only for accounts that signed in with Google -->
+        <div id="priv-box" class="priv-box" style="display:none;">
+            <div class="priv-head"><div class="priv-ico"><i class="fa-solid fa-lock"></i></div><div><b>Private Settings</b><small>Secure your Google account with a number &amp; password</small></div></div>
+            <div class="priv-status" id="priv-status"></div>
+            <div class="priv-field"><i class="fa-solid fa-mobile-screen"></i><input type="tel" id="priv-phone" class="input-box" inputmode="numeric" maxlength="10" placeholder="Mobile number (10 digits)" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"></div>
+            <div class="priv-field"><i class="fa-solid fa-key"></i><input type="password" id="priv-pass" class="input-box" placeholder="Set password (min 8 characters)" autocomplete="new-password"><button type="button" class="priv-eye" onclick="app.togglePrivPass()"><i class="fa-regular fa-eye"></i></button></div>
+            <div class="priv-field"><i class="fa-solid fa-key"></i><input type="password" id="priv-pass2" class="input-box" placeholder="Confirm password" autocomplete="new-password"></div>
+            <button class="btn-main btn-sm" id="priv-btn" onclick="app.savePrivate()" style="width:100%; margin-top:6px;"><i class="fa-solid fa-shield-check"></i> Save Private Settings</button>
+        </div>
+
+        <div style="margin-top:22px; padding-top:16px; border-top:1px solid var(--border);">
+            <h3 style="margin:0 0 12px; font-size:1rem; font-weight:800;">Need Help? Contact Support</h3>
+            <div id="sec-support-list" style="display:flex; flex-direction:column; gap:10px;">
+                <div style="color:var(--text-muted); font-size:0.85rem;">No support contacts configured yet.</div>
+            </div>
+        </div>
+    </div>
+</div>
