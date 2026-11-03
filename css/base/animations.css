@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Animations — whole-app motion system
+   Rules: transform/opacity only (GPU), `backwards` fill so no leftover transforms,
+   list entrance is triggered by js/core/animate.js (adds .anim-list / .anim-in
+   for ~1s) so 15s auto-refresh re-renders never replay animations.
+   ========================================================================== */
+:root{
+  --ease-out: cubic-bezier(.22,1,.36,1);
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes fx-fade-up   { from{opacity:0; transform:translateY(16px)} to{opacity:1; transform:none} }
+@keyframes fx-fade-in   { from{opacity:0} to{opacity:1} }
+@keyframes fx-slide-r   { from{opacity:0; transform:translateX(-18px)} to{opacity:1; transform:none} }
+@keyframes fx-pop       { 0%{opacity:0; transform:scale(.88)} 60%{transform:scale(1.04)} 100%{opacity:1; transform:none} }
+@keyframes fx-rise      { from{opacity:0; transform:translateY(30px) scale(.94)} to{opacity:1; transform:none} }
+@keyframes fx-pulse-dot { 0%,100%{transform:scale(1); opacity:1} 50%{transform:scale(1.35); opacity:.6} }
+@keyframes fx-live      { 0%{box-shadow:0 0 0 0 rgba(239,68,68,.45)} 70%{box-shadow:0 0 0 8px rgba(239,68,68,0)} 100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} }
+@keyframes fx-nav-bounce{ 0%{transform:translateY(0)} 40%{transform:translateY(-7px) scale(1.12)} 100%{transform:translateY(-2px)} }
+@keyframes fx-float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes fx-shine     { 0%{transform:translateX(-120%) skewX(-20deg)} 60%,100%{transform:translateX(220%) skewX(-20deg)} }
+@keyframes fx-shake     { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+/* ---------- Page entrance ---------- */
+.page-section.anim-in > *            { animation: fx-fade-up .45s var(--ease-out) backwards; }
+.page-section.anim-in > *:nth-child(2){ animation-delay:.05s; }
+.page-section.anim-in > *:nth-child(3){ animation-delay:.10s; }
+.page-section.anim-in > *:nth-child(4){ animation-delay:.15s; }
+.page-section.anim-in > *:nth-child(n+5){ animation-delay:.20s; }
+
+/* ---------- Staggered list items (home, my matches, rank, wallet, history, notifications, friends) ---------- */
+.anim-list .match-card, .anim-list .mm-card, .anim-list .rank-item, .anim-list .trx-item,
+.anim-list .notif-card, .anim-list .claim-card, .anim-list .friend-item {
+  animation: fx-fade-up .5s var(--ease-out) backwards;
+}
+.anim-list > :nth-child(1){ animation-delay:.00s !important; }
+.anim-list > :nth-child(2){ animation-delay:.06s !important; }
+.anim-list > :nth-child(3){ animation-delay:.12s !important; }
+.anim-list > :nth-child(4){ animation-delay:.18s !important; }
+.anim-list > :nth-child(5){ animation-delay:.24s !important; }
+.anim-list > :nth-child(6){ animation-delay:.30s !important; }
+.anim-list > :nth-child(n+7){ animation-delay:.36s !important; }
+/* wrapped lists (cards are not direct children) */
+.anim-list .match-card:nth-of-type(1), .anim-list .mm-card:nth-of-type(1){ animation-delay:.00s; }
+.anim-list .match-card:nth-of-type(2), .anim-list .mm-card:nth-of-type(2){ animation-delay:.06s; }
+.anim-list .match-card:nth-of-type(3), .anim-list .mm-card:nth-of-type(3){ animation-delay:.12s; }
+.anim-list .match-card:nth-of-type(4), .anim-list .mm-card:nth-of-type(4){ animation-delay:.18s; }
+.anim-list .match-card:nth-of-type(n+5), .anim-list .mm-card:nth-of-type(n+5){ animation-delay:.24s; }
+
+/* ---------- Cards: tactile press + hover lift ---------- */
+.match-card, .mm-card, .rank-item, .trx-item, .friend-item, .notif-card, .claim-card, .wd-method-card, .filter-chip {
+  transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out), background .2s, border-color .2s;
+}
+.match-card:active, .mm-card:active, .friend-item:active, .wd-method-card:active { transform: scale(.985); }
+@media (hover:hover){
+  .match-card:hover, .mm-card:hover { transform: translateY(-3px); box-shadow:0 12px 28px rgba(79,70,229,.14); }
+}
+.match-card .progress-fill { transition: width .9s var(--ease-out); }
+
+/* ---------- Buttons ---------- */
+.btn-main, .btn-sm, .claim-btn, .copy-btn, .btn-copy {
+  transition: transform .18s var(--ease-out), box-shadow .2s, opacity .2s, background .2s;
+  will-change: transform;
+}
+.btn-main:active, .btn-sm:active, .claim-btn:active, .copy-btn:active, .btn-copy:active { transform: scale(.96); }
+.btn-main:disabled { opacity:.6; }
+.btn-main { position:relative; overflow:hidden; }
+.btn-main:not(:disabled)::after {
+  content:''; position:absolute; top:0; left:0; width:40%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:translateX(-120%) skewX(-20deg); animation: fx-shine 3.6s ease-in-out infinite; pointer-events:none;
+}
+
+/* ---------- Modals: overlay fade + spring sheet + staggered content ---------- */
+.modal-wrap .modal-overlay { opacity:0; transition: opacity .3s ease; backdrop-filter: blur(0); }
+.modal-wrap.active .modal-overlay { opacity:1; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.modal-sheet { transition: transform .5s var(--ease-out); will-change: transform; }
+.modal-wrap.active .modal-sheet > *:not(.sheet-handle){ animation: fx-fade-up .45s var(--ease-out) backwards; }
+.modal-wrap.active .modal-sheet > :nth-child(2){ animation-delay:.04s; }
+.modal-wrap.active .modal-sheet > :nth-child(3){ animation-delay:.08s; }
+.modal-wrap.active .modal-sheet > :nth-child(4){ animation-delay:.12s; }
+.modal-wrap.active .modal-sheet > :nth-child(5){ animation-delay:.16s; }
+.modal-wrap.active .modal-sheet > :nth-child(6){ animation-delay:.20s; }
+.modal-wrap.active .modal-sheet > :nth-child(n+7){ animation-delay:.24s; }
+/* sections shown inside a modal (withdraw bank/crypto, deposit tabs, join step 2) */
+.wd-section.active, #join-step2:not(.hidden), #join-step1:not(.hidden){ animation: fx-fade-up .4s var(--ease-out) backwards; }
+.wd-section.active .wd-field { animation: fx-fade-up .4s var(--ease-out) backwards; }
+.wd-section.active .wd-field:nth-of-type(2){ animation-delay:.05s; }
+.wd-section.active .wd-field:nth-of-type(3){ animation-delay:.10s; }
+.wd-section.active .wd-field:nth-of-type(4){ animation-delay:.15s; }
+.wd-method-card.selected { animation: fx-pop .35s var(--ease-spring); }
+.wd-input .input-box.invalid { animation: fx-shake .3s ease; }
+
+/* ---------- Drawer ---------- */
+.drawer-active .drawer .dm-item, .drawer-active .drawer .drawer-stats, .drawer-active .drawer .drawer-wallet, .drawer-active .drawer .profile-section {
+  animation: fx-slide-r .45s var(--ease-out) backwards;
+}
+.drawer-active .drawer .profile-section { animation-delay:.05s; }
+.drawer-active .drawer .drawer-wallet   { animation-delay:.10s; }
+.drawer-active .drawer .drawer-stats    { animation-delay:.14s; }
+.drawer-active .drawer .dm-item:nth-child(2){ animation-delay:.16s; }
+.drawer-active .drawer .dm-item:nth-child(3){ animation-delay:.20s; }
+.drawer-active .drawer .dm-item:nth-child(4){ animation-delay:.24s; }
+.drawer-active .drawer .dm-item:nth-child(5){ animation-delay:.28s; }
+.drawer-active .drawer .dm-item:nth-child(6){ animation-delay:.32s; }
+.drawer-active .drawer .dm-item:nth-child(n+7){ animation-delay:.36s; }
+.dm-item { transition: background .2s, transform .2s var(--ease-out); }
+.dm-item:active { transform: scale(.98); }
+.dm-item i { transition: transform .3s var(--ease-spring); }
+.dm-item:active i { transform: scale(1.25) rotate(-8deg); }
+
+/* ---------- Settings: toggle switches with spring + settings rows ---------- */
+.toggle-track { transition: background .3s ease; }
+.toggle-dot   { transition: left .35s var(--ease-spring), width .2s; }
+.toggle-track:active .toggle-dot { width:24px; }
+.toggle-track.active:active .toggle-dot { left:14px; }
+#modal-settings .input-box, #modal-sound .dm-item, #modal-sound input[type=range] { transition: border-color .3s, box-shadow .3s, background .3s; }
+#modal-settings .modal-sheet > .input-group, #modal-edit-profile .modal-sheet > .input-group { animation: fx-fade-up .45s var(--ease-out) backwards; }
+.gear-spin { animation: gear-spin .7s var(--ease-spring); }
+
+/* ---------- Bottom nav ---------- */
+.nav-item { transition: color .25s, transform .25s var(--ease-out); }
+.nav-item i { transition: transform .3s var(--ease-spring), color .25s; }
+.nav-item:active { transform: scale(.9); }
+.nav-item.active i { animation: fx-nav-bounce .5s var(--ease-spring) forwards; }
+
+/* ---------- Header / wallet / bell ---------- */
+.wallet-pill { transition: transform .2s var(--ease-out), box-shadow .2s; }
+.wallet-pill:active { transform: scale(.95); }
+.notif-dot { animation: fx-pulse-dot 1.6s ease-in-out infinite; }
+
+/* ---------- Home / wallet / rank accents ---------- */
+.badge-live { animation: fx-live 1.8s ease-out infinite; }
+.credit-card { position:relative; overflow:hidden; animation: fx-pop .6s var(--ease-spring) backwards; }
+.credit-card::after { content:''; position:absolute; top:0; left:0; width:35%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent); transform:translateX(-130%) skewX(-20deg); animation: fx-shine 5s ease-in-out infinite 1s; pointer-events:none; }
+.wallet-actions > * { animation: fx-pop .5s var(--ease-spring) backwards; }
+.wallet-actions > *:nth-child(2){ animation-delay:.07s; } .wallet-actions > *:nth-child(3){ animation-delay:.14s; } .wallet-actions > *:nth-child(4){ animation-delay:.21s; }
+.page-section.anim-in .podium-1 { animation: fx-rise .7s var(--ease-spring) .10s backwards; }
+.page-section.anim-in .podium-2 { animation: fx-rise .7s var(--ease-spring) .25s backwards; }
+.page-section.anim-in .podium-3 { animation: fx-rise .7s var(--ease-spring) .35s backwards; }
+.podium-1 .p-img-box { animation: fx-float 3.2s ease-in-out infinite; }
+.crown { animation: fx-float 2.4s ease-in-out infinite; }
+.filter-chip:active { transform: scale(.94); }
+#home-banner-container { animation: fx-fade-in .6s ease backwards; }
+
+/* ---------- Ban overlay ---------- */
+#ban-overlay > * { animation: fx-pop .5s var(--ease-spring) backwards; }
+
+/* ---------- Chat ---------- */
+/* chat motion lives in pages/chat/chat-ui.css */
+
+/* ---------- Respect user preference ---------- */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+}
+
+/* ---------- Extra polish (toast, brand, chips, inputs, match cards) ---------- */
+#toast { transition: transform .45s var(--ease-spring), opacity .25s; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+#toast.show i { animation: fx-pop .5s var(--ease-spring) .1s backwards; }
+.app-brand-title { background-size:200% 100%; animation: fx-brand 6s ease-in-out infinite; }
+@keyframes fx-brand { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.filter-scroll .filter-chip { animation: fx-pop .45s var(--ease-spring) backwards; }
+.filter-scroll .filter-chip:nth-child(2){ animation-delay:.05s; } .filter-scroll .filter-chip:nth-child(3){ animation-delay:.10s; }
+.filter-scroll .filter-chip:nth-child(4){ animation-delay:.15s; } .filter-scroll .filter-chip:nth-child(n+5){ animation-delay:.20s; }
+.filter-chip.active { box-shadow:0 6px 14px rgba(79,70,229,.3); }
+.input-box:focus { transform:translateY(-1px); }
+.match-banner img { transition: transform .6s var(--ease-out); }
+.match-card:hover .match-banner img { transform:scale(1.06); }
+.progress-fill { position:relative; overflow:hidden; }
+.progress-fill::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent); transform:translateX(-100%); animation: fx-shine 2.8s ease-in-out infinite; }
+.notification-btn, .header-right .wallet-pill { transition: transform .2s var(--ease-out); }
+.notification-btn:active { transform:scale(.88); }
