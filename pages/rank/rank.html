@@ -1,0 +1,17 @@
+<!-- LEADERBOARD -->
+<div id="page-leaderboard" class="page-section hidden">
+    <div class="lb-header">
+        <h2>Leaderboard</h2>
+        <p class="text-muted" style="margin-bottom:12px">Top earners — ranked by match winnings</p>
+        <div class="lb-seg" id="lb-seg" data-active="d">
+            <button type="button" class="lb-tab on" data-p="d" onclick="app.setLBPeriod('d')">Daily</button>
+            <button type="button" class="lb-tab" data-p="w" onclick="app.setLBPeriod('w')">Weekly</button>
+            <button type="button" class="lb-tab" data-p="m" onclick="app.setLBPeriod('m')">Monthly</button>
+            <span class="lb-thumb"></span>
+        </div>
+    </div>
+    <div id="lb-reward" class="lb-reward" style="display:none;"></div>
+    <div id="lb-podium" class="podium-section"></div>
+    <div style="padding:0 25px 10px; display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.8rem; font-weight:600;"><span>Rank</span><span>Winnings</span></div>
+    <div id="lb-list" style="padding:0 20px 80px;"></div>
+</div>
