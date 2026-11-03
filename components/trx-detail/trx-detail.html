@@ -1,0 +1,27 @@
+<!-- TRANSACTION DETAIL (status message + reason + next steps) -->
+<div id="modal-trx-detail" class="modal-wrap" style="z-index:5200;">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet td-sheet">
+        <div class="sheet-handle"></div>
+        <div class="td-hero">
+            <div class="td-icon" id="td-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="td-amount" id="td-amount">₹0</div>
+            <span class="trx-status" id="td-chip">Pending</span>
+            <h3 class="td-headline" id="td-headline"></h3>
+            <p class="td-message" id="td-message"></p>
+        </div>
+        <div class="td-reason" id="td-reason" style="display:none;">
+            <div class="td-reason-lbl"><i class="fa-solid fa-circle-info"></i> <span id="td-reason-title">Reason</span></div>
+            <div class="td-reason-txt" id="td-reason-text"></div>
+        </div>
+        <div class="td-next" id="td-next" style="display:none;">
+            <div class="td-sec-title">What happens next</div>
+            <ul id="td-next-list"></ul>
+        </div>
+        <div class="td-rows" id="td-rows"></div>
+        <div class="td-actions">
+            <button class="btn-main td-help" id="td-help" onclick="ui.closeModal(); app.openWhatsApp()"><i class="fa-brands fa-whatsapp"></i> Contact Support</button>
+            <button class="btn-main td-close" onclick="ui.closeModal()">Close</button>
+        </div>
+    </div>
+</div>
