@@ -17,7 +17,7 @@
 * **Wallet is always newest-first** — new credits/debits appear on top (flash + NEW tag). Old locale-date rows are sorted correctly too.
 * **Players & slots** button on every match card: everyone who joined and the slot they picked (live). Admin Main panel shows the same on each match in its list.
 * **Chat**: DM from World (tap a name/avatar → Message / Add friend / Report; public profiles can be messaged, private ones need friend), Edit / Delete (10 min), **drag a message to reply** (any direction), reply quotes, **emoji picker** + big animated emoji, red dot + notification when someone replies to you in World, DM list now also shows chats with non-friends.
-* **4 Ball Match** (Chat → Game): real wallet entry ₹2/5/10, real names + avatars, real-player matchmaking; after 2 failed searches a **BOT** (always labelled, separate bot avatar set) joins; winner credited 1.8× entry; wins appear on the Leaderboard ("won ₹X in 4 Ball"). Rules, timers and money run on the server (Main admin panel) — the phone cannot cheat.
+* **Coin Battle** (Chat → Game): real wallet entry ₹2/5/10, real names + avatars, real-player matchmaking; after 2 failed searches a **BOT** (always labelled, separate bot avatar set) joins; winner credited 1.8× entry; wins appear on the Leaderboard ("won ₹X in 4 Ball"). Rules, timers and money run on the server (Main admin panel) — the phone cannot cheat.
 
 ## 4 things YOU must do
 1. **`js/core/app-config.js` → set `CHAT_TOKEN_URL`** to your Main Admin Panel (service 1): `https://YOUR-MAIN-PANEL.onrender.com/api/chat/token`. (Until then chat keeps working inside the main project.)
