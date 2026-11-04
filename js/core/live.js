@@ -94,7 +94,7 @@ window.live = (function () {
                 const prev = known.get(m.id);
                 known.set(m.id, { room, status: m.status });
                 if (first || !prev || !joinedIds.includes(m.id)) return;
-                if (room && !prev.room && m.status !== 'completed') {
+                if (room && !prev.room && m.status !== 'completed' && m.status !== 'live') {
                     fresh.push(m.id);
                     window.ui.notify({ type: 'info', title: 'Room ID & Password Ready', message: (m.title || 'Your match') + ' — open My Matches to copy.', sound: 'notification' });
                 }
