@@ -17,7 +17,7 @@ const winnersBlock = (m) => { const w = m.winners || []; if (!w.length) return '
 // A single match's result (used by both history and summary)
 const resultOf = (m, myUid) => {
     const me = (m.participants || []).find(p => p.uid === myUid) || {};
-    const fee = parseFloat(m.fee) || 0;
+    const fee = me.refunded ? 0 : (parseFloat(m.fee) || 0);
     const kills = Number(me.kills) || 0;
     const place = Number(me.rank) || ({'1st':1,'2nd':2,'3rd':3}[me.rank]) || 0;
     const won = m.winnerUid === myUid || (m.winnerUids||[]).includes(myUid) || place === 1;
@@ -26,7 +26,7 @@ const resultOf = (m, myUid) => {
     else if (m.matchType === 'per_kill') amount = kills * (parseFloat(m.prize) || 0);
     else amount = won ? (parseFloat(m.prize) || 0) : 0;
     const kind = won ? 'win' : (kills > 0 || amount > 0) ? 'kill' : 'loss';
-    return { me, fee, kills, won, place, amount, net: amount - fee, kind };
+    return { me, fee, kills, won, place, amount, net: amount - fee, kind, refunded: !!me.refunded };
 };
 
 Object.assign(window.app, {
@@ -42,6 +42,10 @@ Object.assign(window.app, {
     },
 
     _roomBox: (m, slot, done) => {
+        if (!done && m.status === 'live') {
+            return `<div class="mx-room locked"><div class="mx-room-head"><span class="mx-lock"><i class="fa-solid fa-gamepad"></i></span>
+                <div><b>Game Started</b><small>Room ID &amp; password are closed now. Good luck!</small></div><span class="mx-live"><i></i>LIVE</span></div></div>`;
+        }
         if (m.roomId && m.roomPass) {
             const id = esc(m.roomId), pw = esc(m.roomPass);
             const idJs = esc(JSON.stringify(String(m.roomId))), pwJs = esc(JSON.stringify(String(m.roomPass)));
@@ -88,9 +92,10 @@ Object.assign(window.app, {
         const slot = me.slot || (me.slots && me.slots[0]) || '-';
         const perKill = m.matchType === 'per_kill';
         const cls = R.kind;
-        const chip = R.kind === 'win' ? '<i class="fa-solid fa-trophy"></i> WON' : R.place > 1 && R.amount > 0 ? '<i class="fa-solid fa-medal"></i> ' + ({2:'2ND',3:'3RD'})[R.place] : R.kind === 'kill' ? '<i class="fa-solid fa-crosshairs"></i> ' + R.kills + ' KILL' + (R.kills > 1 ? 'S' : '') : '<i class="fa-solid fa-flag-checkered"></i> PLAYED';
+        const chip = R.refunded ? '<i class="fa-solid fa-rotate-left"></i> REFUNDED' : R.kind === 'win' ? '<i class="fa-solid fa-trophy"></i> WON' : R.place > 1 && R.amount > 0 ? '<i class="fa-solid fa-medal"></i> ' + ({2:'2ND',3:'3RD'})[R.place] : R.kind === 'kill' ? '<i class="fa-solid fa-crosshairs"></i> ' + R.kills + ' KILL' + (R.kills > 1 ? 'S' : '') : '<i class="fa-solid fa-flag-checkered"></i> PLAYED';
         let banner;
-        if (R.kind === 'win') banner = `<div class="mx-banner win"><div class="mx-bn-ico"><i class="fa-solid fa-trophy"></i></div><div class="mx-bn-t"><small>CHAMPION · WINNER WINNER</small><b>${esc(m.winnerName || me.appName || window.db.user_name || 'You')}</b></div><div class="mx-bn-amt">+${money(R.amount)}</div></div>`;
+        if (R.refunded) banner = `<div class="mx-banner loss"><div class="mx-bn-ico"><i class="fa-solid fa-rotate-left"></i></div><div class="mx-bn-t"><small>ENTRY REFUNDED</small><b>Fee returned to your wallet</b></div><div class="mx-bn-amt">+${money(me.refundAmount || m.fee)}</div></div>`;
+        else if (R.kind === 'win') banner = `<div class="mx-banner win"><div class="mx-bn-ico"><i class="fa-solid fa-trophy"></i></div><div class="mx-bn-t"><small>CHAMPION · WINNER WINNER</small><b>${esc(m.winnerName || me.appName || window.db.user_name || 'You')}</b></div><div class="mx-bn-amt">+${money(R.amount)}</div></div>`;
         else if (R.place > 1 && R.amount > 0) banner = `<div class="mx-banner kill"><div class="mx-bn-ico"><i class="fa-solid fa-medal"></i></div><div class="mx-bn-t"><small>PODIUM FINISH</small><b>${({2:'2nd',3:'3rd'})[R.place] || R.place + 'th'} Place</b></div><div class="mx-bn-amt">+${money(R.amount)}</div></div>`;
         else if (R.kind === 'kill') banner = `<div class="mx-banner kill"><div class="mx-bn-ico"><i class="fa-solid fa-crosshairs"></i></div><div class="mx-bn-t"><small>${perKill ? 'KILL REWARD' : 'GOOD FIGHT'}</small><b>${R.kills} Kill${R.kills > 1 ? 's' : ''}${perKill ? ' × ' + money(m.prize) : ''}</b></div><div class="mx-bn-amt">${R.amount > 0 ? '+' + money(R.amount) : '₹0'}</div></div>`;
         else banner = `<div class="mx-banner loss"><div class="mx-bn-ico"><i class="fa-solid fa-face-sad-tear"></i></div><div class="mx-bn-t"><small>NO KILLS · NO WIN</small><b>Better luck next time</b></div><div class="mx-bn-amt">₹0</div></div>`;
@@ -126,7 +131,7 @@ Object.assign(window.app, {
         const perKill = m.matchType === 'per_kill';
         const joined = Number(m.joined) || (m.participants || []).length, total = Number(m.total) || 48;
         const pct = Math.min(100, Math.round(joined / total * 100));
-        const ready = !!(m.roomId && m.roomPass);
+        const ready = !!(m.roomId && m.roomPass) && m.status !== 'live';
         return `<div class="mm-card mx-card mx-u ${ready ? 'ready' : ''}" style="--i:${idx}">
             <div class="mx-top"><img src="${img}" class="mx-thumb" alt=""><div class="mx-title"><h4>${esc(m.title)}</h4><small><i class="fa-regular fa-calendar"></i> ${esc(dateLbl(m) || 'Upcoming')}</small></div><span class="mx-chip joined"><i class="fa-solid fa-circle-check"></i> JOINED</span></div>
             <div class="mx-slotbar ${slot ? '' : 'warn'}"><i class="fa-solid ${slot ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i><span>${slot ? 'You are in — Slot <b>#' + esc(slot) + '</b>' : 'Slot not chosen yet — contact support if this stays'}</span></div>
