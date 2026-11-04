@@ -16,8 +16,12 @@ export const CHAT_FIREBASE_CONFIG = {
     appId: "1:505785259739:web:143cf42fca376e5cd21efe",
     measurementId: "G-4KR4L4PZTP"
 };
+/* Chat runs in the MAIN project (where all existing profiles, usernames, friends and blue ticks already are).
+   Leave "" to keep that. Only fill the URL if you really move chat to the separate project (data does NOT move by itself). */
 export const CHAT_TOKEN_URL = "";
+/* Coin Battle game server = your Main Admin Panel on Render (independent of chat). */
+export const GAME_SERVER = "https://admin-panel-v1.onrender.com";
 export const CHAT_TTL_HOURS = 24;
 
-/** 4 Ball Match runs on the Main Admin Panel (same server as chat tokens). Derived automatically from CHAT_TOKEN_URL. */
-export const GAME_API = CHAT_TOKEN_URL ? CHAT_TOKEN_URL.replace(/\/api\/chat\/token\/?$/, '') + '/api/ball' : '';
+/** Coin Battle runs on the Main Admin Panel (same server as chat tokens). Derived automatically from CHAT_TOKEN_URL. */
+export const GAME_API = GAME_SERVER ? GAME_SERVER.replace(/\/+$/, '') + '/api/ball' : '';
