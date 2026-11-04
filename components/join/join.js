@@ -20,6 +20,7 @@ Object.assign(window.app, {
         if((window.db.joined_ids||[]).includes(id)) return window.ui.toast("You have already joined this match.");
         const cached=(window.db.matches||[]).find(x=>x.id===id);
         const open=(m)=>{
+            if(m.status==='live') return window.ui.toast("This match has already started. Please try the next match.");
             if((m.joined||0)>=(m.total||48)) return window.ui.toast("This match is full. Please try another match.");
             const _fe=document.getElementById('join-fee'); if(_fe) delete _fe.dataset.val;   // fee count-up runs on every open
             window.fx.joinDoneHide();
@@ -83,7 +84,7 @@ Object.assign(window.app, {
             let payFromDep=Math.min(dep,fee); let payFromWd=fee-payFromDep;
             // ATOMIC: match entry + wallet debit in a single commit (no half-join if it fails midway)
             const _b=writeBatch(dbService);
-            _b.update(doc(dbService,"matches",match.id),{joined:increment(1),participants:arrayUnion({uid:window.db.user_uid,appName:cur.appName||window.db.user_name,gameName,gameUid})});
+            _b.update(doc(dbService,"matches",match.id),{joined:increment(1),participants:arrayUnion({uid:window.db.user_uid,appName:cur.appName||window.db.user_name,gameName,gameUid,payDep:payFromDep,payWd:payFromWd})});
             _b.update(doc(dbService,"users",window.db.user_uid),{depositBalance:dep-payFromDep,withdrawBalance:wd-payFromWd,joined_matches:arrayUnion(match.id),matchesPlayed:(cur.matchesPlayed||0)+1,gameName,gameUid});
             await _b.commit();
             await addDoc(collection(dbService,"users",window.db.user_uid,"transactions"),{title:`Joined ${match.title}`,amount:`-₹${fee}`,type:"game",status:"success",date:new Date().toLocaleDateString(),timestamp:serverTimestamp(),createdAt:Date.now()});
