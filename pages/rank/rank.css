@@ -39,6 +39,6 @@
 @keyframes lbPop { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
 @keyframes lbRise { from{opacity:0;transform:translateY(40px) scale(.85)} to{opacity:1;transform:none} }
 
-/* leaderboard: winnings that came from the 4 Ball Match game */
+/* leaderboard: winnings that came from the Coin Battle game */
 .lb-game { display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; font-size: .64rem; font-weight: 800; color: #6d28d9; background: rgba(124,58,237,.12); padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
 .podium-item .lb-game { display: flex; justify-content: center; margin: 4px auto 0; font-size: .58rem; } body.dark .lb-game { color: #c4b5fd; background: rgba(139,92,246,.22); }
