@@ -42,8 +42,8 @@ export const myPhoto = () => { const d = window.db.user_data || {}; return d.pho
 /** Blue-tick (verified) users: flag is written only by the admin server (rules block users from setting it themselves). */
 export const isVer = (uid) => !!uid && ((S.ver && S.ver.has(uid)) || !!((uid === S.uid ? S.me : S.prof[uid]) || {}).verified || (uid === S.uid && !!(window.db.user_data || {}).isVerified));
 export const vName = (n, uid, p) => ((p && p.verified) || isVer(uid)) ? `<span class="vn">${esc(n)}</span><i class="fa-solid fa-circle-check vt" title="Verified"></i>` : esc(n);
-/** a verified user may moderate (edit / delete) other people's messages in the public World room only */
-export const canMod = (m) => !!m && !m.deleted && m.from !== S.uid && isVer(S.uid) && !!S.th && S.th.kind === 'world';
+/** a verified (blue tick) user may edit / delete ANY message in every room he can see (World, groups, DMs); own messages after the 10 min window too */
+export const canMod = (m) => !!m && !m.deleted && isVer(S.uid) && !!S.th && (m.from !== S.uid || Date.now() - m.at >= EDIT_MS);
 export const isBlocked = (uid) => S.bl.includes(uid);
 
 export async function getProf(uid) {
@@ -53,7 +53,7 @@ export async function getProf(uid) {
     _pf[uid] = (async () => {
         let p;
         try { const s = await getDoc(doc(db, 'cprofiles', uid)); p = s.exists() ? { ...s.data() } : { uid, name: 'Player', username: '' }; } catch (e) { p = { uid, name: 'Player', username: '' }; }
-        try { const u = await getDoc(doc(dbService, 'users', uid)); if (u.exists()) p.verified = u.data().isVerified === true; } catch (e) { /* keep the chat-profile flag */ }
+        try { const u = await getDoc(doc(dbService, 'users', uid)); if (u.exists()) p.verified = (u.data().isVerified === true) || p.verified === true; } catch (e) { /* keep the chat-profile flag */ }
         S.prof[uid] = p; delete _pf[uid]; return p;
     })();
     return _pf[uid];
@@ -131,7 +131,7 @@ async function _boot(u) {
     S.uid = u.uid;
     const same = () => { const c = authService.currentUser; return !!c && c.uid === u.uid && S.uid === u.uid; };
     await chatReady(); if (!same()) return false;
-    listen(doc(db, 'cconfig', 'verified'), (s) => { S.ver = new Set(s.exists() ? (s.data().uids || []) : []); refresh(); try { if (S.th) window.chat.renderMsgs(); } catch (e) {} });
+    listen(doc(db, 'cconfig', 'verified'), (s) => { S.ver = new Set(s.exists() ? (s.data().uids || []) : []); S.ver.forEach(id => { if (S.prof[id]) S.prof[id].verified = true; }); refresh(); try { if (S.th) window.chat.renderMsgs(); } catch (e) {} });
     listen(doc(db, 'cconfig', 'world'), (s) => { if (s.exists()) S.world = { ...S.world, ...s.data() }; refresh(); });
     const snap = await getDoc(doc(db, 'cprofiles', u.uid)); if (!same()) return false;
     S.me = snap.exists() ? snap.data() : null;
