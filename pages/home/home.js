@@ -112,7 +112,7 @@ Object.assign(window.app, {
         if(window.app.selectedCategory!=='All') data=data.filter(m=>(m.type||m.modeLabel)===window.app.selectedCategory);
         const view=window.app.matchView||'upcoming';
         data=data.filter(m=> view==='completed' ? m.status==='completed' : m.status!=='completed');
-        if(view==='completed') data=[...data].reverse();
+        if(view==='completed') data=[...data].reverse(); else data=[...data].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));   // pinned matches on top
         const sq=String(window.app.searchQ||'').trim().toLowerCase().replace(/^#/,'');
         if(sq) data=data.filter(m=>[m.title,m.map,m.type,m.modeLabel,m.mode,m.modeShort,m.subMode,m.teamMode,m.matchCode,String(m.id||'').slice(0,8),m.fee!=null?('fee '+m.fee):'',m.prize!=null?('prize '+m.prize):''].some(x=>String(x==null?'':x).toLowerCase().includes(sq)));
         const meta=document.getElementById('hs-meta');
@@ -128,14 +128,14 @@ Object.assign(window.app, {
             let btnAction=(joined||done)?"":(full?"":`window.app.checkLogin(() => window.app.openJoin('${m.id}'))`);
             const fmt=window.app._formatLabel(m);
             const pi=window.app._prizeInfo(m);
-            const locked = !joined && !done && !!(m.password && String(m.password).trim());
+            const locked = !joined && !done && (m.status==='live' || !!(m.password && String(m.password).trim()));
             const btnStyle = (full||joined||locked||done)?'background:#e2e8f0; color:#64748b; box-shadow:none;':'';
             const btnLabel = done?'COMPLETED':joined?'JOINED ✅':locked?'<i class="fa-solid fa-lock"></i> MATCH STARTED — TRY NEXT MATCH':full?'FULL':'JOIN NOW';
             const btnClick = (locked||done)?'':btnAction;
             const btnDisabled = (locked||done)?'disabled':'';
             const code = m.matchCode || m.id.slice(0,8).toUpperCase();
             const ptime = (!done && m.prizeTime) ? `<div class="prize-time"><i class="fa-solid fa-clock"></i> Prize payout: <b>${window.app._fmtDT(m.prizeTime)}</b></div>` : '';
-            c.innerHTML+=`<div class="match-card gm-card" style="animation-delay:${Math.min(idx*70,420)}ms"><div class="match-banner"><img src="${img}"><div class="card-badge badge-live">${done?'<span style="color:#fbbf24">ENDED</span>':'LIVE'}</div><div class="card-badge badge-type">${fmt} • ${m.map||'Bermuda'}</div><div class="match-info-overlay"><div class="match-title">${m.title}</div><div class="match-meta"><span class="mid-pill">#${code}</span>${timeDisplay}</div></div></div><div class="match-body"><div class="card-stats-grid"><div><div class="stat-val text-primary">${pi.big}</div><div class="stat-lbl">${pi.lbl}</div></div><div><div class="stat-val">${window.app.coinHtml(m.fee)}</div><div class="stat-lbl">Fee</div></div><div><div class="stat-val">${m.total}</div><div class="stat-lbl">Slots</div></div></div>${pi.rows?`<div class="pz-row">${pi.rows}</div>`:''}${window.app._slotStrip(m)}${window.app.rosterBtn(m)}${ptime}${done?window.app._winnersStrip(m):`<div class="progress-area"><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><div class="prog-text"><span>${m.joined}/${m.total} Joined</span><span>${m.total-m.joined} Left</span></div></div>`}<button class="btn-main" ${btnDisabled} style="${btnStyle}" onclick="${btnClick}">${btnLabel}</button></div></div>`;
+            c.innerHTML+=`<div class="match-card gm-card" style="animation-delay:${Math.min(idx*70,420)}ms"><div class="match-banner"><img src="${img}" alt="Free Fire Tournament"><div class="card-badge badge-live">${done?'<span style="color:#fbbf24">ENDED</span>':'LIVE'}</div><div class="card-badge badge-type">${fmt} • ${m.map||'Bermuda'}</div><div class="match-info-overlay"><div class="match-title">${m.pinned?'📌 ':''}${m.title}</div><div class="match-meta"><span class="mid-pill">#${code}</span>${timeDisplay}</div></div></div><div class="match-body"><div class="card-stats-grid"><div><div class="stat-val text-primary">${pi.big}</div><div class="stat-lbl">${pi.lbl}</div></div><div><div class="stat-val">${window.app.coinHtml(m.fee)}</div><div class="stat-lbl">Fee</div></div><div><div class="stat-val">${m.total}</div><div class="stat-lbl">Slots</div></div></div>${pi.rows?`<div class="pz-row">${pi.rows}</div>`:''}${window.app._slotStrip(m)}${window.app.rosterBtn(m)}${ptime}${done?window.app._winnersStrip(m):`<div class="progress-area"><div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div><div class="prog-text"><span>${m.joined}/${m.total} Joined</span><span>${m.total-m.joined} Left</span></div></div>`}<button class="btn-main" ${btnDisabled} style="${btnStyle}" onclick="${btnClick}">${btnLabel}</button></div></div>`;
         });
         window.timers.tick();
     },
