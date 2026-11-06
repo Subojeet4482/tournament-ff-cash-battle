@@ -28,6 +28,7 @@ window.ui = {
             else { uidInput.disabled=false; uidStatus.innerHTML=''; }
             const left=d.nameChangesLeft!==undefined?d.nameChangesLeft:2; document.getElementById('changes-left-count').innerText=left; document.getElementById('edit-app-name').disabled=(left<=0); const sv=document.getElementById('ep-save'); if(sv){ sv.disabled=false; sv.innerHTML='<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
         }
+        if(id==='modal-edit-profile' && window.app.epSecInit) window.app.epSecInit();
         if(id==='modal-settings'){ document.getElementById('set-pay-method').value=d.paymentMethod||""; document.getElementById('set-pay-name').value=d.paymentName||""; if(typeof window.app.renderSupportContacts==='function') window.app.renderSupportContacts(); }
         if(id==='modal-sound'){
             const va=parseInt(localStorage.getItem('vol_app')||'50');
