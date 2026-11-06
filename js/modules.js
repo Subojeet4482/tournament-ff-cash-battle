@@ -48,9 +48,9 @@ import './core/polish.js';
 import './core/live.js';
 
 // Chat (new system: data in js/core/chat-firebase.js database)
-import '../pages/chat/chat-ui.js?v=5';
-import '../pages/chat/chat-keep.js?v=5';
-import '../pages/chat/chat-pro.js?v=6';
+import '../pages/chat/chat-ui.js?v=6';
+import '../pages/chat/chat-keep.js?v=6';
+import '../pages/chat/chat-pro.js?v=8';
 import './core/shortcuts.js';
 
 // Shell behaviour
