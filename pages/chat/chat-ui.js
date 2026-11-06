@@ -1,7 +1,9 @@
 /** Chat views: landing card, full-screen app (Chat / Profile / Game / Search), history sheet, conversation rendering. */
-import * as core from './chat.js?v=5';
+import * as core from './chat.js?v=6';
 const { S, esc, avatar, chatId, fmtTime, fmtAgo, friendName, isFriend, isBlocked, getProf, sheet, MAX_FRIENDS, EDIT_MS, ttlMs, vName } = core;
-const ttlBanner = () => `<div class="ct-ttl"><i class="fa-regular fa-hourglass-half"></i><span>Messages disappear after <b>${window.chat.ttlLabel ? window.chat.ttlLabel() : '24 hours'}</b>. Tap a message to <b>save it on your device</b>.</span></div>`;
+const ttlBanner = () => (core.S.th && core.S.th.kind === 'dm')
+    ? `<div class="ct-ttl"><i class="fa-solid fa-floppy-disk"></i><span>This chat stays <b>on your device</b>. The server copy is removed every <b>7 days</b> — use <b>⋮ → Backup chats</b> to keep a file.</span></div>`
+    : `<div class="ct-ttl"><i class="fa-regular fa-hourglass-half"></i><span>Messages disappear after <b>${window.chat.ttlLabel ? window.chat.ttlLabel(core.S.th && core.S.th.kind) : '24 hours'}</b>. Tap a message to <b>save it on your device</b>.</span></div>`;
 const $ = (id) => document.getElementById(id);
 const TABS = ['chat', 'profile', 'game', 'search'];
 let histTab = 'matches', searchT = null, lastQ = '';
@@ -86,13 +88,14 @@ const V = {
         const m = S.me; if (!m) return;
         const friends = [...S.fr.list].sort((a, b) => (S.fr.starred.includes(b) - S.fr.starred.includes(a)));
         $('cp-profile').innerHTML = `<div class="pane-pad">
-            <div class="pf-card"><div class="pf-cover"><button class="pf-hist" onclick="chat.openHistory()"><i class="fa-solid fa-clock-rotate-left"></i> History${S.inc.length ? `<em>${S.inc.length}</em>` : ''}</button></div>
+            <div class="pf-card"><div class="pf-cover"></div>
                 <div class="pf-av">${avatar(m.name, m.photo, 'av big')}<span class="pf-on"></span></div>
                 <div class="pf-name">${vName(m.name, S.uid)}</div><div class="pf-user">@${esc(m.username)}</div>
                 <div class="pf-bio" onclick="chat.editBio()">${m.bio ? esc(m.bio) : '<i>Tap to add a bio</i>'} <i class="fa-solid fa-pen"></i></div>
                 <div class="pf-priv"><button class="${!m.isPrivate ? 'on' : ''}" onclick="chat.setPrivacy(false)"><i class="fa-solid fa-earth-asia"></i> Public</button><button class="${m.isPrivate ? 'on' : ''}" onclick="chat.setPrivacy(true)"><i class="fa-solid fa-lock"></i> Private</button><span class="pf-thumb ${m.isPrivate ? 'r' : ''}"></span></div>
                 <div class="pf-note">${m.isPrivate ? 'Private: people can find you only by your exact username.' : 'Public: anyone can find you by searching your username.'}</div>
-                <div class="pf-stats"><div><b>${S.fr.list.length}<small>/${MAX_FRIENDS}</small></b><span>Friends</span></div><div><b>${S.fr.starred.length}</b><span>Starred</span></div><div><b>${S.bl.length}</b><span>Blocked</span></div></div></div>
+                <div class="pf-stats"><div><b>${S.fr.list.length}<small>/${MAX_FRIENDS}</small></b><span>Friends</span></div><div><b>${S.fr.starred.length}</b><span>Starred</span></div><div><b>${S.bl.length}</b><span>Blocked</span></div></div>
+                <button class="pf-histrow" onclick="chat.openHistory()"><span class="hr-ic"><i class="fa-solid fa-clock-rotate-left"></i></span><span class="hr-t"><b>History</b><small>Match history &amp; friend requests</small></span>${S.inc.length ? `<em class="hr-n">${S.inc.length}</em>` : ''}<i class="fa-solid fa-chevron-right hr-ch"></i></button></div>
             ${window.chat.settingsCard ? window.chat.settingsCard() : ''}
             <div class="sec-h"><span>My friends</span></div>
             ${friends.length ? friends.map((f, i) => `<div class="cv-row" style="animation-delay:${Math.min(i, 8) * 40}ms"><div class="cv-av">${avatar(friendName(f), (S.prof[f] || {}).photo)}</div>
@@ -185,7 +188,7 @@ const V = {
             const quote = P.rp ? `<div class="mg-q" data-q="${esc(P.rp.id)}" onclick="event.stopPropagation();chat.jumpTo('${esc(P.rp.id)}')"><b>${esc(P.rp.n)}</b><span>${esc(P.rp.t)}</span></div>` : '';
             const avT = grp && !mine && th.kind === 'world' ? `onclick="event.stopPropagation();chat.userCard('${m.from}','${esc(nm).replace(/'/g, '')}','${esc(m.photo || '')}')"` : '';
             html += `<div class="mg ${mine ? 'me' : 'th'} ${m.deleted ? 'del' : ''} ${emo ? 'emo' : ''} ${prevIds.size && !prevIds.has(m.id) ? 'fresh' : ''}" data-id="${m.id}"><span class="mg-rp"><i class="fa-solid fa-reply"></i></span>${grp && !mine ? `<div class="mg-av" ${avT}>${showName ? avatar(nm, (S.prof[m.from] || {}).photo || m.photo) : ''}</div>` : ''}
-                <div class="mg-b ${canEdit ? 'edit' : ''} ${ttlMs() - (Date.now() - m.at) < 3600000 ? 'soon' : ''} ${saved ? 'sv' : ''}" ${m.deleted ? '' : `onclick="chat.msgTap('${m.id}')"`}>${!showName && core.isVer(m.from) ? `<div class="mg-n vself">${vName(mine ? S.me.name : nm, m.from)}</div>` : ''}${showName ? `<div class="mg-n" ${th.kind === 'world' ? `onclick="event.stopPropagation();chat.userCard('${m.from}','${esc(nm).replace(/'/g, '')}','${esc(m.photo || '')}')"` : ''}>${vName(nm, m.from)}</div>` : ''}${quote}
+                <div class="mg-b ${canEdit ? 'edit' : ''} ${th.kind !== 'dm' && ttlMs(th.kind) - (Date.now() - m.at) < 3600000 ? 'soon' : ''} ${saved ? 'sv' : ''}" ${m.deleted ? '' : `onclick="chat.msgTap('${m.id}')"`}>${!showName && core.isVer(m.from) ? `<div class="mg-n vself">${vName(mine ? S.me.name : nm, m.from)}</div>` : ''}${showName ? `<div class="mg-n" ${th.kind === 'world' ? `onclick="event.stopPropagation();chat.userCard('${m.from}','${esc(nm).replace(/'/g, '')}','${esc(m.photo || '')}')"` : ''}>${vName(nm, m.from)}</div>` : ''}${quote}
                 ${m.deleted ? `<i class="fa-solid fa-ban"></i> ${m.delBy && m.delBy !== m.from ? 'Removed by a verified user' : 'Message deleted'}` : `<span class="mg-t">${esc(P.text).replace(/\n/g, '<br>')}</span>`}<small>${m.edited && !m.deleted ? (m.editBy && m.editBy !== m.from ? 'edited by verified user · ' : 'edited · ') : ''}${fmtTime(m.at)}${saved ? ' <i class="fa-solid fa-bookmark mg-sv"></i>' : ''}</small></div></div>`;
         });
         box.innerHTML = ttlBanner() + html;
