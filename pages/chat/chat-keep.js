@@ -7,7 +7,7 @@
  *     so it survives after the server deletes the message.
  * Everything talks to chat.js only through its HK hooks + window.chat, so the old code stays small.
  */
-import * as core from './chat.js?v=5';
+import * as core from './chat.js?v=6';
 import { collection, query, where, orderBy, limit, onSnapshot, getDocs, deleteDoc, doc, onAuthStateChanged, authService } from '../../js/core/firebase.js';
 import { chatDb as db } from '../../js/core/chat-firebase.js';
 
@@ -50,8 +50,8 @@ async function dbList() {
     mem.forEach(v => { if (v.uid === uid && !rows.find(x => x.k === v.k)) rows.push(v); });
     return rows;
 }
-let savedKeys = new Set();
-async function loadSavedKeys() { savedKeys = new Set((await dbList()).map(r => r.k)); }
+let savedKeys = new Set(), dmKeys = new Set();   // savedKeys = bookmarked / auto-kept chats, dmKeys = automatic copies of friend chats
+async function loadSavedKeys() { const rows = await dbList(); savedKeys = new Set(rows.filter(r => !r.dm).map(r => r.k)); dmKeys = new Set(rows.filter(r => r.dm).map(r => r.k)); }
 const mkRec = (m, th) => ({ k: `${S.uid}|${roomKey(th)}|${m.id}`, uid: S.uid, room: roomKey(th), roomName: th.name || (th.kind === 'world' ? S.world.name : 'Chat'), kind: th.kind, id: m.id, from: m.from, name: m.name || (m.from === S.uid ? 'You' : friendName(m.from)), text: core.parseMsg(m).text || '', at: m.at, savedAt: Date.now() });
 
 /* ================================ notifications ================================ */
@@ -99,7 +99,7 @@ HK.onChats = (prev, next, kind) => {
             const c = next[id], p = prev && prev[id];
             if (!c.lastAt || !c.lastFrom || c.lastFrom === S.uid) continue;
             if (p && c.lastAt <= (p.lastAt || 0)) continue;
-            if (!alive({ at: c.lastAt })) continue;
+            if (!alive({ at: c.lastAt }, kind)) continue;
             if (S.th && S.th.id === id && S.opened && !document.hidden) continue;           // you are looking at it
             if (kind === 'dm' && S.bl.includes(c.lastFrom)) continue;
             if (inList('muted', kind + ':' + id)) continue;
@@ -134,10 +134,11 @@ async function checkWorld() {
 HK.onOpen = (th) => {
     if (th.kind === 'world') { setPref('lastWorld', Date.now()); worldFlag = false; window.chat.markRepliesSeen && window.chat.markRepliesSeen(); recount(); }
     setTimeout(() => purge(th), 1500);
-    clearTimeout(window._ffExp); window._ffExp = setInterval(() => { if (!S.th) return clearInterval(window._ffExp); if (S.thMsgs.some(m => !alive(m))) { S.thMsgs = S.thMsgs.filter(alive); window.chat.renderMsgs(); } else if (S.thMsgs.some(m => m.at && ttlMs() - (Date.now() - m.at) < 3600000)) window.chat.renderMsgs(); }, 60000);
+    clearTimeout(window._ffExp); window._ffExp = setInterval(() => { if (!S.th) return clearInterval(window._ffExp); if (S.thMsgs.some(m => !m.local && !alive(m, S.th.kind))) { S.thMsgs = S.thMsgs.filter(m => m.local || alive(m, S.th.kind)); window.chat.renderMsgs(); } else if (S.th.kind !== 'dm' && S.thMsgs.some(m => m.at && ttlMs(S.th.kind) - (Date.now() - m.at) < 3600000)) window.chat.renderMsgs(); }, 60000);
 };
 HK.onClose = () => { clearInterval(window._ffExp); recount(); paintAll(); };
 HK.onMsgs = (th, msgs) => {
+    if (th.kind === 'dm') keepDm(th, msgs);
     if (th.kind === 'world') { setPref('lastWorld', Date.now()); }
     if (th.kind === 'world' && msgs.length && msgs[msgs.length - 1].from !== S.uid && document.hidden && getPref('world', false) && !inList('muted', 'world:world')) {
         const m = msgs[msgs.length - 1]; if (Date.now() - m.at < 15000) announce(S.world.name || 'World chat', `${m.name || 'Player'}: ${m.text}`, 'world', { kind: 'world', id: 'world' });
@@ -145,17 +146,76 @@ HK.onMsgs = (th, msgs) => {
 };
 
 /* ================================ expiry ================================ */
-export const ttlLabel = () => { const h = ttlMs() / 3600000; return h % 24 === 0 ? (h / 24 === 1 ? '24 hours' : (h / 24) + ' days') : h + ' hours'; };
-const leftText = (m) => { const l = ttlMs() - (Date.now() - m.at); if (l <= 0) return 'expired'; const h = Math.floor(l / 3600000), mi = Math.floor((l % 3600000) / 60000); return h ? `${h}h ${mi}m` : `${mi}m`; };
+export const ttlLabel = (kind) => { const h = ttlMs(kind) / 3600000; return h % 24 === 0 ? (h / 24 === 1 ? '24 hours' : (h / 24) + ' days') : h + ' hours'; };
+const leftText = (m) => { const l = ttlMs(S.th && S.th.kind) - (Date.now() - m.at); if (l <= 0) return 'expired'; const h = Math.floor(l / 3600000), mi = Math.floor((l % 3600000) / 60000); return h ? `${h}h ${mi}m` : `${mi}m`; };
 /** Delete expired messages of this chat from the database (rules allow it only after 24h; the admin server also cleans up). */
 async function purge(th) {
     try {
         const key = 'ffp_' + roomKey(th), last = Number(localStorage.getItem(key) || 0);
         if (Date.now() - last < 3600000) return; localStorage.setItem(key, String(Date.now()));
-        const cutoff = Date.now() - Math.max(ttlMs(), DAY);
+        const cutoff = Date.now() - Math.max(ttlMs(th.kind), DAY);
         const s = await getDocs(query(collection(db, pathOf(th)), where('at', '<', cutoff), limit(40)));
         for (const d of s.docs) { try { await deleteDoc(doc(db, pathOf(th), d.id)); } catch (e) { break; } }
     } catch (e) { }
+}
+
+/* ================================ friend chats (DM): stay on this device ================================ */
+let dmBusy = false;
+async function keepDm(th, msgs) {
+    if (dmBusy) return; dmBusy = true;
+    try {
+        const rk = roomKey(th), ids = new Set(msgs.map(m => m.id));
+        // 1) copy new / edited messages to this device, drop the ones that were deleted
+        const put = [], del = [];
+        msgs.forEach(m => {
+            const r = mkRec(m, th);
+            if (m.deleted) { if (dmKeys.has(r.k)) { del.push(r.k); dmKeys.delete(r.k); } return; }
+            if (!r.text || savedKeys.has(r.k)) return;
+            if (!dmKeys.has(r.k) || m.edited) { put.push({ ...r, dm: 1, savedAt: Date.now() }); dmKeys.add(r.k); }
+        });
+        if (put.length) await dbPut(put); if (del.length) await dbDel(del);
+        // 2) older copies the server already removed (after 7 days) come back from this device
+        const old = (await dbList()).filter(r => r.room === rk && !ids.has(r.id));
+        if (old.length && S.th && S.th.id === th.id) {
+            const back = old.map(r => ({ id: r.id, from: r.from, name: r.name, text: r.text, at: r.at, local: true }));
+            S.thMsgs = [...back, ...S.thMsgs.filter(m => !m.local)].sort((a, b) => a.at - b.at);
+            window.chat.renderMsgs();
+        }
+    } catch (e) { }
+    dmBusy = false;
+}
+
+/* ================================ backup / restore (⋮ menu) ================================ */
+async function backupChats() {
+    core.closeMenu();
+    const rows = await dbList();
+    if (!rows.length) return toast('Nothing to back up yet');
+    const data = { app: 'ff-cash-battle', type: 'chat-backup', v: 1, uid: S.uid, at: Date.now(), count: rows.length, rows };
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const a = document.createElement('a'), d = new Date(), p = (n) => String(n).padStart(2, '0');
+    a.href = URL.createObjectURL(blob); a.download = `ffcashbattle-chat-backup-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast(`Backup saved · ${rows.length} messages ✓`);
+}
+function restorePick() {
+    core.closeMenu();
+    const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json'; i.style.display = 'none';
+    i.onchange = async () => {
+        const f = i.files && i.files[0]; i.remove(); if (!f) return;
+        try {
+            if (f.size > 25 * 1048576) return toast('This file is too big');
+            const data = JSON.parse(await f.text());
+            if (!data || data.type !== 'chat-backup' || !Array.isArray(data.rows)) return toast('This is not a chat backup file');
+            if (data.uid !== S.uid) return toast('This backup belongs to another account');
+            const rows = data.rows.filter(r => r && r.k && r.uid === S.uid && String(r.k).startsWith(S.uid + '|') && typeof r.text === 'string' && r.at).map(r => ({ k: String(r.k), uid: S.uid, room: String(r.room || ''), roomName: String(r.roomName || 'Chat'), kind: String(r.kind || 'dm'), id: String(r.id || ''), from: String(r.from || ''), name: String(r.name || ''), text: r.text.slice(0, 2000), at: Number(r.at), savedAt: Number(r.savedAt) || Date.now(), ...(r.dm ? { dm: 1 } : {}), ...(r.auto ? { auto: 1 } : {}) }));
+            if (!rows.length) return toast('No messages found in this file');
+            const have = new Set((await dbList()).map(r => r.k)), fresh = rows.filter(r => !have.has(r.k));
+            await dbPut(fresh); await loadSavedKeys();
+            toast(`Restored ${fresh.length} message${fresh.length === 1 ? '' : 's'} ✓`);
+            if (S.th) window.chat.renderMsgs(); if (S.th && S.th.kind === 'dm') keepDm(S.th, S.thMsgs.filter(m => !m.local)); chat.renderAll && chat.renderAll();
+        } catch (e) { toast('Could not read this file'); }
+    };
+    document.body.appendChild(i); i.click();
 }
 
 /* ================================ saved messages ================================ */
@@ -174,7 +234,7 @@ function startBg() {
     want.forEach((rk) => {
         if (bg.has(rk)) return; const [kind, ...r] = rk.split(':'), id = r.join(':'); if (!kind || !id) return;
         const th = { kind, id }; let name = kind === 'world' ? (S.world.name || 'World') : kind === 'group' ? ((S.groups[id] || {}).name || 'Group') : friendName(id.split('_').find(x => x !== S.uid) || '');
-        const u = onSnapshot(query(collection(db, pathOf(th)), where('at', '>', Date.now() - ttlMs()), orderBy('at', 'desc'), limit(100)), (s) => {
+        const u = onSnapshot(query(collection(db, pathOf(th)), where('at', '>', Date.now() - ttlMs(th.kind)), orderBy('at', 'desc'), limit(100)), (s) => {
             const recs = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => !m.deleted && core.parseMsg(m).text).map(m => ({ ...mkRec(m, { ...th, name }), savedAt: Date.now(), auto: 1 })).filter(r => !savedKeys.has(r.k));
             recs.forEach(r => savedKeys.add(r.k)); dbPut(recs);
         }, () => {});
@@ -183,7 +243,7 @@ function startBg() {
 }
 async function toggleAuto() {
     const th = S.th; if (!th) return; const rk = roomKey(th); const on = !inList('auto', rk);
-    if (on) { const ok = await ask({ icon: 'fa-floppy-disk', title: 'Keep a copy of this chat?', text: 'New messages in this chat are also saved on THIS device, so they stay after the server deletes them (after ' + ttlLabel() + '). Uses a little phone / PC storage.', yes: 'Keep copy' }); if (!ok) return; }
+    if (on) { const ok = await ask({ icon: 'fa-floppy-disk', title: 'Keep a copy of this chat?', text: 'New messages in this chat are also saved on THIS device, so they stay after the server deletes them (after ' + ttlLabel(th.kind) + '). Uses a little phone / PC storage.', yes: 'Keep copy' }); if (!ok) return; }
     toggleList('auto', rk); startBg(); core.closeMenu(); toast(on ? 'Auto-keep ON for this chat' : 'Auto-keep OFF'); paintAll();
 }
 function toggleMute() { const th = S.th; if (!th) return; const rk = roomKey(th); const on = toggleList('muted', rk); core.closeMenu(); toast(on ? 'Alerts muted for this chat' : 'Alerts back on'); recount(); }
@@ -203,15 +263,15 @@ async function openSaved() {
         ${g.items.map(r => `<div class="sv-it"><div class="sv-t"><b>${esc(r.name)}</b><span>${esc(r.text)}</span><small>${fmtDT(r.at)}</small></div><div class="sv-b"><button onclick="chat.svCopy('${esc(r.k)}')" aria-label="Copy"><i class="fa-regular fa-copy"></i></button><button class="red" onclick="chat.svDel('${esc(r.k)}')" aria-label="Delete"><i class="fa-solid fa-trash"></i></button></div></div>`).join('')}</div>`).join('')
         : `<div class="empty small"><i class="fa-regular fa-bookmark"></i><b>Nothing saved yet</b><span>Tap any message → <b>Save on this device</b>, or turn on <b>Keep a copy</b> in a chat's ⋮ menu.</span></div>`;
     $('cs').innerHTML = `<i class="cs-h"></i><div class="hs-top"><b><i class="fa-solid fa-bookmark" style="color:#f59e0b"></i> Saved on this device</b><button class="hs-x" onclick="chat.sheetClose()"><i class="fa-solid fa-xmark"></i></button></div>
-        <div class="sv-note"><i class="fa-solid fa-circle-info"></i> Messages vanish from the server after ${ttlLabel()}. Copies saved here stay on this phone / PC until you delete them.</div>
+        <div class="sv-note"><i class="fa-solid fa-circle-info"></i> World &amp; group messages vanish from the server after ${ttlLabel()}, friend chats (DM) after 7 days. Copies saved here stay on this phone / PC until you delete them.</div>
         <div class="hs-body sv-body">${body}</div>
-        <div class="sv-foot">${info ? `<small>${esc(info)}</small>` : ''}${rows.length ? `<div class="cs-btns"><button class="cs-b no" onclick="chat.svExport()"><i class="fa-solid fa-file-arrow-down"></i> Export .txt</button><button class="cs-b yes red" onclick="chat.svClear()">Delete all</button></div>` : ''}</div>`;
+        <div class="sv-foot">${info ? `<small>${esc(info)}</small>` : ''}<div class="cs-btns" style="margin-bottom:8px"><button class="cs-b no" onclick="chat.kpBackup()"><i class="fa-solid fa-cloud-arrow-down"></i> Backup</button><button class="cs-b no" onclick="chat.kpRestore()"><i class="fa-solid fa-cloud-arrow-up"></i> Restore</button></div>${rows.length ? `<div class="cs-btns"><button class="cs-b no" onclick="chat.svExport()"><i class="fa-solid fa-file-arrow-down"></i> Export .txt</button><button class="cs-b yes red" onclick="chat.svClear()">Delete all</button></div>` : ''}</div>`;
 }
 async function svDel(k) { await dbDel([k]); savedKeys.delete(k); openSaved(); }
 async function svCopy(k) { const r = (await dbList()).find(x => x.k === k); if (!r) return; copyText(r.text); }
 async function svClear() {
-    const ok = await ask({ icon: 'fa-trash', title: 'Delete all saved messages?', text: 'This removes every copy stored on this device. It cannot be undone.', yes: 'Delete all', danger: true }); if (!ok) return;
-    const rows = await dbList(); await dbDel(rows.map(r => r.k)); savedKeys.clear(); toast('Cleared'); openSaved();
+    const ok = await ask({ icon: 'fa-trash', title: 'Delete all saved messages?', text: 'This removes every copy stored on this device, including your friend chats (take a Backup first if you want to keep them). It cannot be undone.', yes: 'Delete all', danger: true }); if (!ok) return;
+    const rows = await dbList(); await dbDel(rows.map(r => r.k)); savedKeys.clear(); dmKeys.clear(); toast('Cleared'); openSaved();
 }
 async function svExport() {
     const rows = (await dbList()).sort((a, b) => a.room.localeCompare(b.room) || a.at - b.at); if (!rows.length) return;
@@ -227,7 +287,7 @@ function msgTap(id) {
     const mine = m.from === S.uid, left = EDIT_MS - (Date.now() - m.at), saved = isSavedMsg(m), P = core.parseMsg(m), world = S.th.kind === 'world';
     const nm = m.name || friendName(m.from);
     sheet(`<div class="cs-t">${mine ? 'Your message' : esc(nm)}</div><div class="cs-quote">${esc(P.text)}</div>
-        <div class="cs-timer ttl"><i class="fa-regular fa-hourglass-half"></i> Disappears from server in ${leftText(m)}</div>
+        <div class="cs-timer ttl"><i class="fa-regular fa-hourglass-half"></i> ${S.th.kind === 'dm' ? 'Kept on your device · server copy removed in ' : 'Disappears from server in '}${leftText(m)}</div>
         <div class="cs-list">
           <button class="pri" onclick="chat.replyTo('${id}')"><i class="fa-solid fa-reply"></i> Reply</button>
           ${!mine && world ? `<button onclick="chat.openDm('${m.from}')"><i class="fa-solid fa-paper-plane" style="color:#6366f1"></i> Message ${esc(nm)}</button>` : ''}
@@ -248,8 +308,8 @@ function settingsCard() {
         ${sw('n', 'Message alerts', state + ' · browser notification + sound for new messages', on, 'chat.kpAlerts(this)')}
         ${sw('w', 'World chat alerts', 'Notify for World room messages (can be noisy)', getPref('world', false), "chat.kpPref('world',this.checked)")}
         ${sw('s', 'Sound', 'Play a sound when a message arrives', getPref('sound', true) !== false, "chat.kpPref('sound',this.checked)")}
-        <button class="kp-saved" onclick="chat.openSaved()"><i class="fa-solid fa-bookmark"></i><span><b>Saved on this device</b><small>${savedKeys.size} message${savedKeys.size === 1 ? '' : 's'} · stays after the server deletes them</small></span><i class="fa-solid fa-chevron-right"></i></button>
-        <div class="kp-note"><i class="fa-solid fa-hourglass-half"></i> Messages live for <b>${ttlLabel()}</b> on the server, then are deleted automatically.</div></div>`;
+        <button class="kp-saved" onclick="chat.openSaved()"><i class="fa-solid fa-bookmark"></i><span><b>Saved on this device</b><small>${savedKeys.size + dmKeys.size} message${savedKeys.size + dmKeys.size === 1 ? '' : 's'} · stays after the server deletes them</small></span><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="kp-note"><i class="fa-solid fa-hourglass-half"></i> World chat lives <b>${ttlLabel()}</b> on the server. Friend chats (DM) stay on this device and the server copy is removed every <b>7 days</b>.</div></div>`;
 }
 function landingAlert() {
     const el = $('cl-alert'); if (!el) return;
@@ -284,10 +344,10 @@ chat.threadMenu = function () {
     _tm.call(chat); const m = $('ct-menu'); const th = S.th;
     if (!th || m.classList.contains('hidden')) return;
     const rk = roomKey(th), auto = inList('auto', rk), mute = inList('muted', rk);
-    m.insertAdjacentHTML('beforeend', `<button onclick="chat.kpAuto()"><i class="fa-solid fa-floppy-disk" style="color:#6366f1"></i>${auto ? 'Stop keeping copy' : 'Keep a copy on device'}</button><button onclick="chat.openSaved()"><i class="fa-solid fa-bookmark" style="color:#f59e0b"></i>Saved messages</button><button onclick="chat.kpMute()"><i class="fa-solid ${mute ? 'fa-bell' : 'fa-bell-slash'}"></i>${mute ? 'Unmute alerts' : 'Mute alerts'}</button>`);
+    m.insertAdjacentHTML('beforeend', `<button onclick="chat.kpAuto()"><i class="fa-solid fa-floppy-disk" style="color:#6366f1"></i>${auto ? 'Stop keeping copy' : 'Keep a copy on device'}</button><button onclick="chat.openSaved()"><i class="fa-solid fa-bookmark" style="color:#f59e0b"></i>Saved messages</button><button onclick="chat.kpMute()"><i class="fa-solid ${mute ? 'fa-bell' : 'fa-bell-slash'}"></i>${mute ? 'Unmute alerts' : 'Mute alerts'}</button><button onclick="chat.kpBackup()"><i class="fa-solid fa-cloud-arrow-down" style="color:#10b981"></i>Backup chats</button><button onclick="chat.kpRestore()"><i class="fa-solid fa-cloud-arrow-up" style="color:#3b82f6"></i>Restore backup</button>`);
     if (th.kind === 'world') $('ct-dots').style.display = '';
 };
-chat.kpAuto = toggleAuto; chat.kpMute = toggleMute;
+chat.kpAuto = toggleAuto; chat.kpMute = toggleMute; chat.kpBackup = backupChats; chat.kpRestore = restorePick;
 const _ra = chat.renderAll; chat.renderAll = function () { _ra.call(chat); paintAll(); };
 
 /* ================================ lifecycle ================================ */
@@ -297,7 +357,7 @@ async function afterLogin() {
     try { await swRegister(); await core.boot(); await loadSavedKeys(); startBg(); checkWorld(); window.chat.watchReplies && window.chat.watchReplies(); recount(); paintAll(); } catch (e) { /* chat server asleep or no profile — retried next time */ }
     booting = false;
 }
-const wipeBg = () => { baseline.dm = baseline.group = false; worldFlag = false; bg.forEach(f => f()); bg.clear(); savedKeys.clear(); booting = false; recount(); };
+const wipeBg = () => { baseline.dm = baseline.group = false; worldFlag = false; bg.forEach(f => f()); bg.clear(); savedKeys.clear(); dmKeys.clear(); booting = false; recount(); };
 onAuthStateChanged(authService, (u) => {
     // logout, or a DIFFERENT account logged in -> forget everything of the previous account first
     if (!u || (S.uid && S.uid !== u.uid)) { try { core.resetChat(); } catch (e) { console.warn(e); } wipeBg(); if (!u) { try { window.chat.close && window.chat.close(); } catch (e) {} } }
