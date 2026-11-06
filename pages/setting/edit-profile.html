@@ -1,0 +1,66 @@
+
+<!-- EDIT PROFILE -->
+<div id="modal-edit-profile" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet ep-sheet">
+        <div class="sheet-handle"></div>
+        <div class="ep-head">
+            <h2>Edit Profile</h2>
+            <button type="button" class="ep-x" onclick="ui.closeModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="ep-top">
+            <div class="ep-avatar" onclick="document.getElementById('file-upload').click()">
+                <span class="ep-ring"></span>
+                <img src="" id="edit-profile-img" alt="Profile photo" onerror="gameArtFb(this)" data-seed="me">
+                <span class="ep-cam"><i class="fa-solid fa-camera"></i></span>
+            </div>
+            <div class="ep-hint">Tap to change photo <span>(auto-resize)</span></div>
+            <input type="file" id="file-upload" accept="image/*" hidden onchange="app.handleImageUpload(this)">
+            <button type="button" class="ep-pid" onclick="ui.copy(document.getElementById('edit-player-id').innerText)"><i class="fa-regular fa-id-badge"></i> Player ID <b id="edit-player-id">--</b> <i class="fa-regular fa-copy"></i></button>
+        </div>
+        <div class="ep-card">
+            <label class="ep-lbl" for="edit-app-name">App Username</label>
+            <div class="ep-field">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="edit-app-name" class="input-box" placeholder="Display Name" maxlength="24" autocomplete="off" oninput="document.getElementById('ep-name-count').innerText=this.value.length+'/24'">
+                <span class="ep-count" id="ep-name-count">0/24</span>
+            </div>
+            <div class="ep-sub"><i class="fa-regular fa-clock"></i> Changes left: <b id="changes-left-count">2</b></div>
+        </div>
+        <div class="ep-card">
+            <h4 class="ep-title"><i class="fa-solid fa-gamepad"></i> Game Information</h4>
+            <label class="ep-lbl" for="edit-game-name">In-Game Name *</label>
+            <div class="ep-field"><i class="fa-solid fa-signature"></i><input type="text" id="edit-game-name" class="input-box" placeholder="Exact FF Name" autocomplete="off"></div>
+            <label class="ep-lbl" for="edit-game-uid">Game UID <span id="uid-status-icon"></span></label>
+            <div class="ep-field"><i class="fa-solid fa-hashtag"></i><input type="number" id="edit-game-uid" class="input-box" placeholder="FF UID (6-12 digits)" inputmode="numeric"></div>
+        </div>
+        <div class="ep-card ep-sec" id="ep-sec">
+            <h4 class="ep-title"><i class="fa-solid fa-shield-halved"></i> Phone &amp; Password</h4>
+            <div class="ep-pills" id="ep-pills"></div>
+
+            <!-- phone -->
+            <div class="ep-blk" id="ep-ph-have">
+                <div class="ep-row"><span><i class="fa-solid fa-mobile-screen"></i> <b id="ep-ph-mask">--</b></span><button type="button" class="ep-mini" onclick="app.epPhoneToggle()"><i class="fa-solid fa-arrow-right-arrow-left"></i> Change number</button></div>
+            </div>
+            <div class="ep-blk hidden" id="ep-ph-form">
+                <label class="ep-lbl" id="ep-ph-lbl" for="ep-ph-new">New phone number</label>
+                <div class="ep-field"><i class="fa-solid fa-mobile-screen"></i><input type="tel" id="ep-ph-new" class="input-box" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"></div>
+                <div class="ep-field" id="ep-ph-conf-wrap"><i class="fa-solid fa-check-double"></i><input type="tel" id="ep-ph-conf" class="input-box" inputmode="numeric" maxlength="10" placeholder="Confirm new number" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"></div>
+                <div class="ep-actions"><button type="button" class="ep-mini ghost hidden" id="ep-ph-cancel" onclick="app.epPhoneToggle(false)">Cancel</button><button type="button" class="ep-mini solid" id="ep-ph-btn" onclick="app.epSavePhone()"><i class="fa-solid fa-floppy-disk"></i> <span>Save number</span></button></div>
+            </div>
+
+            <!-- password -->
+            <div class="ep-blk ep-sep hidden" id="ep-pw-set">
+                <label class="ep-lbl" for="ep-pw1">Set password</label>
+                <div class="ep-field"><i class="fa-solid fa-key"></i><input type="password" id="ep-pw1" class="input-box" placeholder="New password (min 8 characters)" autocomplete="new-password"></div>
+                <div class="ep-field"><i class="fa-solid fa-key"></i><input type="password" id="ep-pw2" class="input-box" placeholder="Confirm password" autocomplete="new-password"></div>
+                <div class="ep-actions"><button type="button" class="ep-mini solid" id="ep-pw-btn" onclick="app.epSetPassword()"><i class="fa-solid fa-lock"></i> <span>Set password</span></button></div>
+            </div>
+            <div class="ep-blk ep-sep hidden" id="ep-pw-reset">
+                <div class="ep-row"><span><i class="fa-solid fa-key"></i> <b>Password is set</b></span><button type="button" class="ep-mini" id="ep-rs-btn" onclick="app.epResetPassword()"><i class="fa-solid fa-envelope"></i> <span>Reset password</span></button></div>
+                <div class="ep-note" id="ep-rs-note">A reset link will be sent to your registered email.</div>
+            </div>
+        </div>
+        <button class="btn-main" id="ep-save" onclick="app.saveProfile()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+    </div>
+</div>
