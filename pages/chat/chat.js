@@ -21,8 +21,10 @@ export const chatId = (a, b) => [a, b].sort().join('_');
 export const fmtTime = (ms) => new Date(ms).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 export const fmtAgo = (ms) => { if (!ms) return ''; const d = Date.now() - ms; if (d < 60000) return 'now'; if (d < 3600000) return Math.floor(d / 60000) + 'm'; if (d < 86400000) return Math.floor(d / 3600000) + 'h'; return Math.floor(d / 86400000) + 'd'; };
 /** Message life (ms). Default 24h; admin can change it in Chat Manager (cconfig/world.ttlHours, 1–168). */
-export const ttlMs = () => Math.max(1, Math.min(168, Number(S.world && S.world.ttlHours) || CHAT_TTL_HOURS || 24)) * 3600000;
-export const alive = (m) => !!m && (Date.now() - (m.at || 0)) < ttlMs();
+export const DM_TTL_MS = 7 * 86400000;   // friend chats (DM): server keeps 7 days, your device keeps them until YOU delete
+/** World / group life: 24h by default (admin can change). DM life: 7 days. */
+export const ttlMs = (kind) => kind === 'dm' ? DM_TTL_MS : Math.max(1, Math.min(168, Number(S.world && S.world.ttlHours) || CHAT_TTL_HOURS || 24)) * 3600000;
+export const alive = (m, kind) => !!m && (Date.now() - (m.at || 0)) < ttlMs(typeof kind === 'string' ? kind : undefined);
 export const friendName = (uid) => (S.fr.nicks && S.fr.nicks[uid]) || (S.prof[uid] && S.prof[uid].name) || 'Player';
 /* ---------- replies: stored natively (rid/rn/rt/ru); falls back to a hidden prefix if the rules were not updated yet ---------- */
 const RPX = /^\u2060R(\{.*?\})\u2060/s;
@@ -209,8 +211,8 @@ export async function openThread(kind, id, uid) {
     window.chat.renderThreadHead();
     if (S.thUnsub) { S.thUnsub(); S.thUnsub = null; }
     hk('onOpen', th);
-    S.thUnsub = onSnapshot(query(collection(db, pathOf(th)), where('at', '>', Date.now() - ttlMs()), orderBy('at', 'desc'), limit(80)), (s) => {
-        S.thMsgs = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(alive).reverse(); hk('onMsgs', th, S.thMsgs); window.chat.renderMsgs(); markRead();
+    S.thUnsub = onSnapshot(query(collection(db, pathOf(th)), where('at', '>', Date.now() - ttlMs(th.kind)), orderBy('at', 'desc'), limit(80)), (s) => {
+        S.thMsgs = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => alive(m, th.kind)).reverse(); hk('onMsgs', th, S.thMsgs); window.chat.renderMsgs(); markRead();
     }, (e) => { $('ct-msgs').innerHTML = `<div class="ct-empty"><i class="fa-solid fa-lock"></i><b>Can't open this chat</b><span>${esc(errMsg(e))}</span></div>`; });
 }
 export function closeThread() { const th = S.th; $('ct').classList.remove('on'); closeMenu(); if (S.thUnsub) { S.thUnsub(); S.thUnsub = null; } S.th = null; S.editing = null; hk('onClose', th); }
