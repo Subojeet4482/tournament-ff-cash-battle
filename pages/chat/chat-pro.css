@@ -106,3 +106,6 @@ body.ball-open { overflow: hidden; }
 .mg-n.vself { margin-bottom: 3px; }
 .mg.me .mg-n.vself { display: inline-block; background: rgba(255,255,255,.95); padding: 2px 10px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
 @media (prefers-reduced-motion: reduce) { .vn, .vt { animation: none; } }
+
+/* sheets that have their own close button never get the generic one (no double ✕) */
+#cs:has(.hs-x) > .cs-x { display: none !important; }
