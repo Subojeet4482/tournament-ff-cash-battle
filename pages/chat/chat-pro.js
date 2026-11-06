@@ -3,7 +3,7 @@
  * user card (World -> Message), and reply notifications in World.
  * Works on top of chat.js / chat-ui.js / chat-keep.js through window.chat.
  */
-import * as core from './chat.js?v=5';
+import * as core from './chat.js?v=6';
 import { collection, query, where, onSnapshot } from '../../js/core/firebase.js';
 import { chatDb as db } from '../../js/core/chat-firebase.js';
 
@@ -132,7 +132,7 @@ chat.markRepliesSeen = function () { try { localStorage.setItem('ffrp_' + S.uid,
     const shut = () => { const s = sheetEl(); if (s) { s.style.transform = ''; s.style.transition = ''; } const o = ovEl(); if (o) o.style.opacity = ''; try { sheetClose(); } catch (e) { /* fall through */ } if (s) s.classList.remove('on'); if (o) o.classList.remove('on'); };
 
     // 1) ✕ button: plain element (no own listeners) + ONE delegated click handler — the same mechanism as the Cancel button, which always worked.
-    const ensureX = () => { const s = sheetEl(); if (!s || !s.firstChild || s.querySelector(':scope > .cs-x')) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cs-x'; b.setAttribute('aria-label', 'Close'); b.innerHTML = '<i class="fa-solid fa-xmark"></i>'; s.insertBefore(b, s.firstChild); };
+    const ensureX = () => { const s = sheetEl(); if (s && s.querySelector('.hs-x')) { s.querySelectorAll(':scope > .cs-x').forEach(x => x.remove()); return; } if (!s || !s.firstChild || s.querySelector(':scope > .cs-x') || s.querySelector('.hs-x')) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'cs-x'; b.setAttribute('aria-label', 'Close'); b.innerHTML = '<i class="fa-solid fa-xmark"></i>'; s.insertBefore(b, s.firstChild); };
     document.addEventListener('click', (e) => { const x = e.target.closest && e.target.closest('#cs > .cs-x'); if (!x) return; e.preventDefault(); e.stopPropagation(); shut(); }, true);
 
     const boot = () => {
