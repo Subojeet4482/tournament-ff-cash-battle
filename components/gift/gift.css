@@ -1,0 +1,62 @@
+.gift-sheet { text-align:center; }
+.gift-hero { margin-bottom:14px; } .gift-hero h2 { margin:10px 0 4px; } .gift-hero p { margin:0; font-size:.82rem; color:var(--text-muted); }
+.gift-box { position:relative; width:74px; height:74px; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:2.3rem; color:#fff; background:linear-gradient(135deg,#8b5cf6,#ec4899); border-radius:22px; box-shadow:0 14px 28px -10px rgba(139,92,246,.7); animation:giftFloat 3s ease-in-out infinite; }
+.gift-box i { animation:giftWiggle 3s ease-in-out infinite; }
+@keyframes giftFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.gift-hero.win .gift-box { animation:giftOpen .8s cubic-bezier(.34,1.56,.64,1) both; background:linear-gradient(135deg,#10b981,#059669); }
+@keyframes giftOpen { 0%{transform:scale(1)} 40%{transform:scale(1.25) rotate(-8deg)} 100%{transform:scale(1) rotate(0)} }
+.gift-field { position:relative; margin-top:8px; }
+.gift-input { width:100%; box-sizing:border-box; padding:16px 48px 16px 16px; border-radius:16px; border:2px solid var(--border); background:var(--bg-input); font-family:monospace; font-size:1rem; letter-spacing:1.5px; text-align:center; color:var(--text-main); outline:none; transition:border-color .25s, box-shadow .25s; }
+.gift-input:focus { border-color:var(--primary); box-shadow:0 0 0 4px rgba(79,70,229,.14); }
+.gift-field.ok .gift-input { border-color:#10b981; box-shadow:0 0 0 4px rgba(16,185,129,.16); }
+.gift-field.bad .gift-input { border-color:#ef4444; animation:giftShake .45s; }
+@keyframes giftShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-7px)} 40%,80%{transform:translateX(7px)} }
+.gift-paste { position:absolute; right:8px; top:50%; transform:translateY(-50%); width:36px; height:36px; border:0; border-radius:12px; background:rgba(79,70,229,.1); color:var(--primary); cursor:pointer; } .gift-paste:active { transform:translateY(-50%) scale(.88); }
+.gift-meter { height:5px; border-radius:5px; background:var(--bg-input); overflow:hidden; margin:10px 2px 6px; } .gift-meter i { display:block; height:100%; width:0; background:linear-gradient(90deg,#8b5cf6,#ec4899); border-radius:5px; transition:width .25s cubic-bezier(.16,1,.3,1); }
+.gift-sub { display:flex; justify-content:space-between; align-items:center; font-size:.72rem; color:var(--text-muted); font-weight:700; padding:0 2px; margin-bottom:6px; }
+.gift-tries { display:inline-flex; gap:5px; align-items:center; } .gift-tries i { width:9px; height:9px; border-radius:50%; background:#10b981; transition:.3s; } .gift-tries i.x { background:#ef4444; transform:scale(1.15); }
+.gift-msg { min-height:22px; font-size:.82rem; font-weight:700; margin-bottom:8px; } .gift-msg.err { color:#ef4444; animation:wfxUp .3s both; } .gift-msg.ok { color:#10b981; }
+.gift-note { margin-top:12px; font-size:.7rem; color:var(--text-muted); display:flex; gap:6px; justify-content:center; align-items:flex-start; text-align:left; line-height:1.5; }
+#gift-btn:disabled { opacity:.45; box-shadow:none; }
+
+/* ===== Redeem Gift Code — matches wallet_icons/gift-reedme-poppup.png ===== */
+.gift-sheet.gp { text-align: left; padding: 22px 22px 26px; border-radius: 34px 34px 0 0; overflow: hidden;
+  background: radial-gradient(120% 70% at 85% 0%, rgba(255,255,255,.9), transparent 55%), radial-gradient(90% 60% at 0% 40%, rgba(236,190,252,.65), transparent 60%), linear-gradient(180deg,#f8effe 0%,#f1defb 45%,#f7eefd 100%); border: 1px solid rgba(255,255,255,.8); box-shadow: 0 -30px 80px -30px rgba(124,58,237,.55); }
+.gift-sheet.gp::before { content: ''; position: absolute; right: -30px; top: 60px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(196,148,255,.35), transparent 70%); pointer-events: none; }
+.gp .gp-handle { width: 78px; height: 8px; border-radius: 8px; background: rgba(139,92,246,.35); margin: -6px auto 12px; }
+.gp-x { position: absolute; right: 16px; top: 16px; z-index: 3; width: 44px; height: 44px; border: 0; border-radius: 16px; background: rgba(168,120,240,.28); color: #5b21b6; font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,.6); transition: transform .25s cubic-bezier(.34,1.56,.64,1), background .2s; }
+.gp-x:hover { background: rgba(168,120,240,.42); transform: rotate(90deg); } .gp-x:active { transform: scale(.88); }
+.gp-hero { display: flex; align-items: center; gap: 4px; margin: 4px 0 6px; position: relative; z-index: 1; }
+.gp-art { width: 47%; max-width: 230px; height: auto; flex: none; margin-left: -10px; filter: drop-shadow(0 16px 20px rgba(109,40,217,.3)); animation: gpFloat 4.2s ease-in-out infinite; }
+@keyframes gpFloat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
+.gp-title { flex: 1; min-width: 0; padding-right: 6px; padding-top: 18px; }
+.gp-title h2 { margin: 0; font-size: clamp(1.35rem, 5.6vw, 1.9rem); line-height: 1.12; font-weight: 900; color: #0f0a2e; letter-spacing: -.5px; }
+.gp-title h2 span { display: block; background: linear-gradient(90deg,#6d28d9,#db2777); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gp-title p { margin: 8px 0 10px; font-size: clamp(.78rem, 3.1vw, .9rem); line-height: 1.4; color: #6b5a93; font-weight: 600; }
+.gp-bar { display: block; width: 70px; height: 5px; border-radius: 5px; background: linear-gradient(90deg,#7c3aed,#c026d3); }
+.gp .gift-hero.win .gift-box { display: none; }
+#gift-hero.win .gp-art { animation: gpWin .9s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes gpWin { 0% { transform: scale(1); } 40% { transform: scale(1.18) rotate(-6deg); } 100% { transform: scale(1); } }
+
+.gp-field { position: relative; margin-top: 14px; padding: 3px; border-radius: 26px; background: linear-gradient(135deg,#7c3aed,#c084fc 50%,#7c3aed); box-shadow: 0 14px 30px -14px rgba(124,58,237,.7); transition: box-shadow .3s, transform .3s cubic-bezier(.22,1,.36,1); }
+.gp-field:focus-within { transform: translateY(-1px); box-shadow: 0 18px 36px -12px rgba(124,58,237,.85), 0 0 0 4px rgba(168,85,247,.18); }
+.gp-field .gift-input { display: block; width: 100%; height: 62px; border: 0; border-radius: 23px; background: linear-gradient(180deg,#f4f4fb,#ececf6); padding: 0 62px 0 12px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: clamp(.74rem, 3.5vw, .98rem); font-weight: 700; letter-spacing: 1px; text-align: center; color: #2a1458; box-shadow: inset 0 2px 6px rgba(76,29,149,.08); }
+.gp-field .gift-input::placeholder { color: #6b6b85; letter-spacing: 4px; opacity: .85; }
+.gp-field .gift-input:focus { outline: none !important; box-shadow: inset 0 2px 6px rgba(76,29,149,.08); }
+.gp-field.ok { background: linear-gradient(135deg,#10b981,#6ee7b7,#10b981); } .gp-field.bad { background: linear-gradient(135deg,#ef4444,#fb7185); animation: giftShake .45s; }
+.gp-paste { right: 10px !important; width: 46px !important; height: 46px !important; border-radius: 15px !important; background: rgba(168,120,240,.28) !important; color: #5b21b6 !important; font-size: 1.25rem !important; }
+.gp-meter { height: 4px; margin: 12px 8px 4px; background: rgba(124,58,237,.14); } .gp-meter i { background: linear-gradient(90deg,#7c3aed,#db2777); }
+.gp .gift-sub { color: #7c6aa6; padding: 0 8px; }
+.gp .gift-msg { min-height: 20px; margin: 2px 6px 0; }
+.gp-note { display: flex; gap: 12px; align-items: center; margin: 8px 4px 16px; font-size: clamp(.76rem, 3vw, .88rem); line-height: 1.5; color: #4c3b73; font-weight: 600; } .gp-note svg { flex: none; filter: drop-shadow(0 4px 6px rgba(109,40,217,.35)); } .gp-note b { color: #7e22ce; font-weight: 900; }
+.gp-btn { position: relative; width: 100%; height: 64px; border: 0; border-radius: 34px; cursor: pointer; overflow: hidden; font-family: inherit; color: #fff; display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: linear-gradient(180deg,#9a4dff 0%,#7a22f0 55%,#6414d6 100%); box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 0 0 5px rgba(168,85,247,.55), 0 16px 34px -10px rgba(124,58,237,.85), 0 0 30px rgba(236,72,153,.35); transition: transform .25s cubic-bezier(.34,1.56,.64,1), filter .2s, box-shadow .3s; }
+.gp-btn::before { content: ''; position: absolute; inset: 0 0 50% 0; background: linear-gradient(180deg,rgba(255,255,255,.28),transparent); border-radius: 34px 34px 60% 60%; pointer-events: none; }
+.gp-btn::after { content: ''; position: absolute; top: 0; left: -70%; width: 45%; height: 100%; background: linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent); transform: skewX(-20deg); animation: gfxShine 3.4s ease-in-out infinite; pointer-events: none; }
+.gp-btn:not(:disabled):active { transform: scale(.97); } .gp-btn:disabled { filter: saturate(.55) brightness(1.08); cursor: not-allowed; box-shadow: 0 0 0 3px rgba(255,255,255,.7), 0 10px 24px -14px rgba(124,58,237,.6); }
+.gp-bt { font-size: 1.5rem; font-weight: 900; letter-spacing: .2px; display: inline-flex; align-items: center; gap: 12px; text-shadow: 0 2px 8px rgba(60,10,140,.45); } .gp-bt i { font-size: 1.55rem; }
+.gp-ch { position: absolute; font-size: 1.7rem; color: rgba(255,255,255,.28); top: 50%; transform: translateY(-50%); } .gp-ch.l { left: 22px; animation: gpChL 1.6s ease-in-out infinite; } .gp-ch.r { right: 22px; animation: gpChR 1.6s ease-in-out infinite; }
+@keyframes gpChL { 0%,100% { transform: translate(0,-50%); opacity: .5; } 50% { transform: translate(6px,-50%); opacity: 1; } } @keyframes gpChR { 0%,100% { transform: translate(0,-50%); opacity: .5; } 50% { transform: translate(-6px,-50%); opacity: 1; } }
+@media (max-width: 360px) { .gp-bt { font-size: 1.25rem; } .gp-ch { display: none; } }
+body.dark .gift-sheet.gp { background: radial-gradient(120% 70% at 85% 0%, rgba(124,58,237,.35), transparent 55%), linear-gradient(180deg,#2b1650,#190d33); border-color: rgba(167,139,250,.25); }
+body.dark .gp-title h2 { color: #fff; } body.dark .gp-title p, body.dark .gp-note { color: #cdbcf5; } body.dark .gp-field .gift-input { background: linear-gradient(180deg,#241545,#1b0f36); color: #f3e8ff; } body.dark .gp-field .gift-input::placeholder { color: #8e7bc0; } body.dark .gp-x, body.dark .gp-paste { background: rgba(167,139,250,.22) !important; color: #e9d5ff !important; }
