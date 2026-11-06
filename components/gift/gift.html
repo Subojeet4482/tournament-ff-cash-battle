@@ -1,0 +1,34 @@
+<!-- GIFT CODE — "Redeem Gift Code" sheet (design: wallet_icons/gift-reedme-poppup.png) -->
+<div id="modal-gift" class="modal-wrap">
+    <div class="modal-overlay" onclick="ui.closeModal()"></div>
+    <div class="modal-sheet gift-sheet gp">
+        <div class="gp-handle sheet-handle"></div>
+        <button type="button" class="gp-x" onclick="ui.closeModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+
+        <div class="gp-hero" id="gift-hero">
+            <img class="gp-art" src="assets/img/wallet/gift-card.png" alt="" draggable="false">
+            <div class="gp-title">
+                <h2>Redeem <span>Gift Code</span></h2>
+                <p>Enter your 24-character code exactly as given.</p>
+                <i class="gp-bar"></i>
+            </div>
+        </div>
+
+        <div class="gp-field gift-field" id="gift-field">
+            <input type="text" id="gift-input" class="gift-input" maxlength="24" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••••••••••••••••••••" oninput="app.giftInput(this)" onkeydown="if(event.key==='Enter')app.redeemGift()" aria-label="24 character gift code">
+            <button type="button" class="gift-paste gp-paste" onclick="app.giftPaste()" title="Paste" aria-label="Paste code"><i class="fa-regular fa-clipboard"></i></button>
+        </div>
+        <div class="gift-meter gp-meter"><i id="gift-bar"></i></div>
+        <div class="gift-sub"><span id="gift-count">0 / 24</span><span id="gift-tries" class="gift-tries"></span></div>
+        <div id="gift-msg" class="gift-msg"></div>
+
+        <div class="gp-note">
+            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 2 4 5.5v6c0 5 3.4 8.6 8 10.5 4.6-1.9 8-5.5 8-10.5v-6L12 2z" fill="#6d28d9"/><path d="m8.2 12.2 2.6 2.6 5-5.2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>One code can be used once per account.<br>5 wrong tries lock redeeming for <b>24 hours</b>.</span>
+        </div>
+
+        <button class="gp-btn" id="gift-btn" onclick="app.redeemGift()" disabled>
+            <i class="fa-solid fa-angles-right gp-ch l"></i><span class="gp-bt"><i class="fa-solid fa-gift"></i> Redeem</span><i class="fa-solid fa-angles-left gp-ch r"></i>
+        </button>
+    </div>
+</div>
