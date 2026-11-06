@@ -1,7 +1,7 @@
 /**
  * Settings: dark mode, AI mode, sounds, gear, profile + payment settings, support contacts.
  */
-import { updateProfile, doc, setDoc, updateDoc, getDocs, collection, query, where, EmailAuthProvider, linkWithCredential, authService, dbService } from '../../js/core/firebase.js';
+import { updateProfile, doc, setDoc, updateDoc, getDocs, collection, query, where, EmailAuthProvider, linkWithCredential, sendPasswordResetEmail, authService, dbService } from '../../js/core/firebase.js';
 
 Object.assign(window.app, {
     // Theme switch: new theme spreads like a circle from the toggle button over the whole screen (dark -> light AND light -> dark)
@@ -210,7 +210,7 @@ Object.assign(window.app, {
         const u = authService.currentUser, box = document.getElementById('priv-box'); if (!box) return;
         const ids = u ? u.providerData.map(p => p.providerId) : [];
         const google = ids.includes('google.com'), hasPass = ids.includes('password');
-        box.style.display = google ? 'block' : 'none'; if (!google) return;
+        box.style.display = 'none'; return;   // moved into Edit Profile (Phone & Password)
         const phone = window.db.user_phone || '';
         document.getElementById('priv-phone').value = phone;
         document.getElementById('priv-status').innerHTML =
@@ -245,6 +245,71 @@ Object.assign(window.app, {
         } catch (e) {
             window.ui.toast(e.code === 'auth/requires-recent-login' ? 'Please login again, then retry' : (e.code === 'auth/email-already-in-use' || e.code === 'auth/credential-already-in-use') ? 'This email already has a password login' : 'Error: ' + (e.message || 'try again'));
         } finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-shield-check"></i> Save Private Settings'; }
+    },
+    // ---- Edit Profile: Phone & Password (all users) ----
+    epSecInit: () => {
+        const u = authService.currentUser, $ = (i) => document.getElementById(i); if (!u || !$('ep-sec')) return;
+        const phone = window.db.user_phone || '', has = /^\d{10}$/.test(phone), hasPass = u.providerData.some(p => p.providerId === 'password');
+        $('ep-pills').innerHTML = `<span class="priv-pill ${has ? 'ok' : ''}"><i class="fa-solid fa-mobile-screen"></i> ${has ? 'Number saved' : 'No number'}</span><span class="priv-pill ${hasPass ? 'ok' : ''}"><i class="fa-solid fa-key"></i> ${hasPass ? 'Password set' : 'No password'}</span>`;
+        $('ep-ph-have').classList.toggle('hidden', !has); $('ep-ph-form').classList.toggle('hidden', has);
+        if (has) $('ep-ph-mask').innerText = '+91 ' + phone.slice(0, 2) + '******' + phone.slice(-2);
+        $('ep-ph-lbl').innerText = 'Enter phone number'; $('ep-ph-conf-wrap').style.display = 'none'; $('ep-ph-cancel').classList.add('hidden'); $('ep-ph-btn').querySelector('span').innerText = 'Save number';
+        ['ep-ph-new', 'ep-ph-conf', 'ep-pw1', 'ep-pw2'].forEach(i => { if ($(i)) $(i).value = ''; });
+        $('ep-pw-set').classList.toggle('hidden', hasPass); $('ep-pw-reset').classList.toggle('hidden', !hasPass);
+        const em = u.email || (window.db.user_data || {}).email || '';
+        $('ep-rs-note').innerText = em ? 'A reset link will be sent to ' + em.replace(/^(.{2}).*(@.*)$/, '$1***$2') + '. Open it, set the new password.' : 'A reset link will be sent to your registered email.';
+    },
+    // open / close the "change number" form (number already saved: new number + confirm)
+    epPhoneToggle: (open) => {
+        const $ = (i) => document.getElementById(i), show = open !== false;
+        $('ep-ph-have').classList.toggle('hidden', show); $('ep-ph-form').classList.toggle('hidden', !show);
+        $('ep-ph-lbl').innerText = 'New phone number'; $('ep-ph-conf-wrap').style.display = ''; $('ep-ph-cancel').classList.remove('hidden'); $('ep-ph-btn').querySelector('span').innerText = 'Confirm & change';
+        $('ep-ph-new').value = ''; $('ep-ph-conf').value = ''; if (show) setTimeout(() => $('ep-ph-new').focus(), 120); else window.app.epSecInit();
+    },
+    epSavePhone: async () => {
+        const u = authService.currentUser, $ = (i) => document.getElementById(i); if (!u) return window.ui.toast('Please login first');
+        const cur = window.db.user_phone || '', changing = /^\d{10}$/.test(cur), n = $('ep-ph-new').value.trim(), c = $('ep-ph-conf').value.trim();
+        if (!/^[6-9]\d{9}$/.test(n)) return window.ui.toast('Enter a valid 10-digit mobile number');
+        if (changing) { if (n === cur) return window.ui.toast('This is already your number'); if (n !== c) return window.ui.toast('Numbers do not match — confirm the new number'); }
+        const btn = $('ep-ph-btn'), lbl = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+        try {
+            const dup = await getDocs(query(collection(dbService, 'users'), where('phone', '==', n)));
+            if (dup.docs.some(d => d.id !== u.uid)) { window.ui.toast('This number is already used by another account'); return; }
+            await updateDoc(doc(dbService, 'users', u.uid), { phone: n });
+            window.db.user_phone = n; if (window.db.user_data) window.db.user_data.phone = n;
+            const pp = document.getElementById('profile-phone'); if (pp) pp.innerText = n.substring(0, 3) + '******' + n.substring(8);
+            window.ui.toast(changing ? 'Number changed ✓' : 'Number saved ✓'); window.app.epSecInit();
+        } catch (e) { window.ui.toast('Error: ' + (e.message || 'try again')); }
+        finally { btn.disabled = false; btn.innerHTML = lbl; }
+    },
+    epSetPassword: async () => {
+        const u = authService.currentUser, $ = (i) => document.getElementById(i); if (!u) return window.ui.toast('Please login first');
+        const p1 = $('ep-pw1').value, p2 = $('ep-pw2').value;
+        if (!u.email) return window.ui.toast('No email on this account');
+        if (p1.length < 8) return window.ui.toast('Password must be at least 8 characters');
+        if (p1 !== p2) return window.ui.toast('Passwords do not match');
+        const btn = $('ep-pw-btn'), lbl = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+        try {
+            await linkWithCredential(u, EmailAuthProvider.credential(u.email, p1));
+            await updateDoc(doc(dbService, 'users', u.uid), { hasPassword: true });
+            window.ui.toast('Password set ✓'); window.app.epSecInit();
+        } catch (e) {
+            window.ui.toast(e.code === 'auth/requires-recent-login' ? 'Please login again, then retry' : (e.code === 'auth/email-already-in-use' || e.code === 'auth/credential-already-in-use' || e.code === 'auth/provider-already-linked') ? 'This account already has a password — use Reset password' : 'Error: ' + (e.message || 'try again'));
+        } finally { btn.disabled = false; btn.innerHTML = lbl; }
+    },
+    // password already set -> "Reset password": link goes to the registered email, user sets the new one from there
+    epResetPassword: async () => {
+        const u = authService.currentUser, $ = (i) => document.getElementById(i); if (!u || !u.email) return window.ui.toast('No email on this account');
+        const key = 'fp_last_' + u.email.toLowerCase(), left = 180000 - (Date.now() - parseInt(localStorage.getItem(key) || '0'));
+        if (left > 0) return window.ui.toast('Link already sent. Try again in ' + Math.ceil(left / 1000) + 's — check Inbox / Spam');
+        const btn = $('ep-rs-btn'), lbl = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
+        try {
+            await sendPasswordResetEmail(authService, u.email);
+            localStorage.setItem(key, String(Date.now()));
+            try { await updateDoc(doc(dbService, 'users', u.uid), { hasPassword: true }); } catch (e) {}
+            window.ui.toast('Reset link sent to ' + u.email + ' ✓ Check Inbox / Spam');
+        } catch (e) { window.ui.toast(e.code === 'auth/too-many-requests' ? 'Too many requests. Wait a few minutes.' : 'Error: ' + (e.message || 'try again')); }
+        finally { btn.disabled = false; btn.innerHTML = lbl; }
     },
     savePaymentSettings: async () => {
         const method=document.getElementById('set-pay-method').value; const name=document.getElementById('set-pay-name').value;
